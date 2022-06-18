@@ -1,5 +1,4 @@
 import random
-
 from pyDes import des, CBC, PAD_PKCS5
 from base64 import b64encode, b64decode
 from instance import *
@@ -7,8 +6,9 @@ from jinjiangAPI import HttpUtil, UrlConstant
 
 
 def get(url: str, params: dict = None, return_type: str = "json"):
-    try:
+    if params is not None:
         params.update({"token": Vars.cfg.data.get("user_info").get("token")})
+    try:
         api_url = UrlConstant.WEB_HOST + url.replace(UrlConstant.WEB_HOST, "")
         return HttpUtil.get_api(url=api_url, params=params, return_type=return_type)
     except Exception as err:
@@ -60,7 +60,7 @@ class Book:
 
 class Chapter:
     @staticmethod
-    def chapter_list(novel_id: str, more: int = 0, whole: int = 1) -> dict:  # get chapter list by novel_id
+    def get_chapter_list(novel_id: str, more: int = 0, whole: int = 1) -> dict:  # get chapter list by novel_id
         return get(url="chapterList", params={"novelId": novel_id, "more": more, "whole": whole})
 
     @staticmethod

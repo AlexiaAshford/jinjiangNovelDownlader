@@ -79,19 +79,20 @@ class Vars:
 
 
 def set_config():
-    save_config: bool = False
+    Vars.cfg.load()
+    save_config: bool = True
     if Vars.cfg.data.get("user_info") is None or not isinstance(Vars.cfg.data.get("user_info"), dict):
         Vars.cfg.data['user_info'] = {"nickName": "", "token": "", "readerId": "", "balance": "", "readergrade": ""}
-        save_config = True
+        save_config = False
     if Vars.cfg.data.get("downloaded_book_id_list") is None:
         Vars.cfg.data['downloaded_book_id_list'] = []
-        save_config = True
+        save_config = False
     if Vars.cfg.data.get("out_path") is None or Vars.cfg.data.get("out_path") == "":
         Vars.cfg.data['out_path'] = "downloads"
-        save_config = True
+        save_config = False
     if Vars.cfg.data.get("config_path") is None or Vars.cfg.data.get("config_path") == "":
         Vars.cfg.data['config_path'] = "configs"
-        save_config = True
+        save_config = False
     if save_config:
         Vars.cfg.save()
 

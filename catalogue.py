@@ -3,7 +3,7 @@ class Chapter:
         self.index = index
         self.chapter_info = chapter_info
         self.chapter_id = chapter_info["chapterid"]
-        self.chapter_name = chapter_info["chaptername"]
+        self.chapter_title = chapter_info["chaptername"]
         self.chapter_date = chapter_info["chapterdate"]
         self.chapter_click = chapter_info["chapterclick"]
         self.chapter_size = chapter_info["chaptersize"]
@@ -21,7 +21,7 @@ class Chapter:
         self.is_edit = chapter_info["isEdit"]
 
     def __str__(self) -> str:
-        show_chapter_info = "chapter_name:{}".format(self.chapter_name)
+        show_chapter_info = "chapter_title:{}".format(self.chapter_title)
         show_chapter_info += "\nchapter_date:{}".format(self.chapter_date)
         show_chapter_info += "\nchapter_click:{}".format(self.chapter_click)
         show_chapter_info += "\nchapter_size:{}".format(self.chapter_size)
@@ -44,7 +44,7 @@ class Content:
     def __init__(self, content_info: dict):
         self.content_info = content_info
         self.chapter_id = content_info["chapterId"]
-        self.chapter_name = content_info["chapterName"]
+        self.chapter_title = content_info["chapterName"]
         self.chapter_intro = content_info["chapterIntro"]
         self.chapter_size = content_info["chapterSize"]
         self.chapter_date = content_info["chapterDate"]
@@ -56,7 +56,7 @@ class Content:
 
     def __str__(self) -> str:
         show_content_info = "chapter_id:{}".format(self.chapter_id)
-        show_content_info += "\nchapter_name:{}".format(self.chapter_name)
+        show_content_info += "\nchapter_title:{}".format(self.chapter_title)
         show_content_info += "\nchapter_intro:{}".format(self.chapter_intro)
         show_content_info += "\nchapter_size:{}".format(self.chapter_size)
         show_content_info += "\nchapter_date:{}".format(self.chapter_date)
