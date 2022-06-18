@@ -13,7 +13,7 @@ class Book:
         self.book_info = book_info
         self.thread_list = []
         self.speed_of_progress = 0
-        # self.download_lock
+        self.pool_sema = threading.BoundedSemaphore(Vars.cfg.data['max_thread'])
         self.book_id = book_info["novelId"]
         self.book_name = book_info["novelName"]
         self.book_author = book_info["authorName"]
@@ -52,7 +52,7 @@ class Book:
             return print(response.get("message"))
         if len(response['chapterlist']) == 0:
             return print("the catalogue is empty")
-        for index, chapter in enumerate(response['chapterlist']):
+        for index, chapter in enumerate(response['chapterlist'], start=1):
             chap = catalogue.Chapter(chapter_info=chapter, index=index)
             # content_info = jinjiangAPI.Chapter.chapter_content(self.book_id, chap.chapter_id, chap.is_vip)
             if exists_file(os.path.join(Vars.config_text, chap.chapter_id + ".txt")):  # if the file exists, skip it
@@ -62,6 +62,7 @@ class Book:
             self.thread_list.append(
                 threading.Thread(target=self.download_content, args=(index, chap.chapter_id, chap.is_vip,))
             )  # add to queue and download in thread
+
         for thread in self.thread_list:  # start thread one by one and wait for all thread done
             thread.start()
         for thread in self.thread_list:  # wait for all thread to finish and join
@@ -69,21 +70,45 @@ class Book:
         self.thread_list.clear()  # clear thread list and thread queue
 
     def download_content(self, chapter_index: int, chapter_id: str, is_vip: bool):
+        self.pool_sema.acquire()
         self.speed_of_progress += 1
-        response = jinjiangAPI.Chapter.chapter_content(self.book_id, chapter_id, is_vip)
-        if response.get("message") is None:
+        if is_vip == 2:
+            response = jinjiangAPI.Chapter.chapter_vip_content(self.book_id, chapter_id)
+            if response.get("message") is None:
+                response['content'] = jinjiangAPI.decrypt(response['content'], token=True)
+        else:
+            response = jinjiangAPI.Chapter.chapter_content(self.book_id, chapter_id)
+        if isinstance(response, dict) and response.get("message") is None:
             content_info = catalogue.Content(response)
-            content_text = f"第 {chapter_index} 章" + content_info.chapter_title
+            content_text = f"第 {chapter_index} 章: " + content_info.chapter_title
             content_text += "\n" + content_info.content.replace("&lt;br&gt;&lt;br&gt;", "\n")
             TextFile.write(
                 text_path=os.path.join(Vars.config_text, chapter_id + ".txt"),
                 text_content=content_text,
                 mode="w"
             )
-        print("{}/{}".format(self.speed_of_progress, self.book_chapter_count), end="\r")
+            print("{}: {}/{}".format(self.book_name, self.speed_of_progress, self.book_chapter_count), end="\r")
+        else:
+            if isinstance(response, dict) and "购买章节" in response.get("message"):
+                print(response.get("message"))
+        self.pool_sema.release()
 
     def download_cover(self):
         pass
+
+    def out_text_file(self):
+        config_text_file_name_list = os.listdir(Vars.config_text)
+        config_text_file_name_list.sort(key=lambda x: int(x.split(".")[0]))
+        out_text_path = os.path.join(Vars.out_text_file, self.book_name + ".txt")
+        if os.path.exists(out_text_path):
+            os.remove(out_text_path)
+        for file_name in config_text_file_name_list:
+            if file_name.endswith(".txt"):
+                TextFile.write(
+                    text_path=out_text_path, mode="a",
+                    text_content="\n\n\n" + TextFile.read(os.path.join(Vars.config_text, file_name))
+                )
+        print("out text file done! path:", out_text_path)
 
     def mkdir_content_file(self):
         Vars.config_text = os.path.join("configs", self.book_name)
