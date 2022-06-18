@@ -2,7 +2,6 @@ import jinjiangAPI
 import click
 from instance import *
 import book
-import catalogue
 
 
 @click.command()
@@ -19,7 +18,7 @@ def get_book_info(bid: str):
 
 @click.command()
 @click.option('--account', default="", help='description')
-def login_account(account: str) -> dict:
+def login_account(account: str):
     if "----" in account:  # if account is a ----, then use default account and password
         username, password = account.split("----")
     else:
@@ -27,11 +26,19 @@ def login_account(account: str) -> dict:
     response = jinjiangAPI.Account.login(username, password)
     if response.get("message") is None:
         print("login success", response["nickName"], "vip:", response["readergrade"])
-        return {"readerId": response["readerId"], "token": response["token"]}
+        Vars.cfg.data['user_info'] = {
+            "nickName": response["nickName"],
+            "token": response["token"],
+            "readerId": response["readerId"],
+            "balance": response["balance"],
+            "readergrade": response["readergrade"]
+        }
+        Vars.cfg.save()
     else:
         print("login failed", response["message"])
 
 
 if __name__ == '__main__':
-    get_book_info()
+    set_config()
+    # get_book_info()
     login_account()
