@@ -48,4 +48,9 @@ class Book:
         response = jinjiangAPI.Chapter.chapter_list(self.book_id)['chapterlist']
         for index, chapter in enumerate(response):
             chapter_info = catalogue.Chapter(chapter_info=chapter, index=index)
-            print(chapter_info)
+            content_info = catalogue.Content(jinjiangAPI.Chapter.chapter_content(
+                novel_id=self.book_id,
+                chapter_id=chapter_info.chapter_id,
+                vip_chapter=chapter_info.is_vip
+            ))
+            print(content_info)
