@@ -1,6 +1,6 @@
 import jinjiangAPI
 import click
-# from rich import print
+from instance import *
 import book
 import catalogue
 
@@ -8,13 +8,13 @@ import catalogue
 @click.command()
 @click.option('--bid', default="", help='description')  # book id (novel_id)
 def get_book_info(bid: str):
-    book_info = jinjiangAPI.Book.novel_basic_info(bid)  # get book information by novel_id
-    if book_info.get("message") is None:  # get book information success then print book information
-        var = book.Book(book_info)
-        var.get_catalogue()
-
+    Vars.current_book = jinjiangAPI.Book.novel_basic_info(bid)  # get book information by novel_id
+    if Vars.current_book.get("message") is None:  # get book information success then print book information
+        Vars.current_book = book.Book(Vars.current_book)
+        Vars.current_book.mkdir_content_file()
+        Vars.current_book.get_catalogue()
     else:
-        print(book_info["message"])
+        print(Vars.current_book["message"])
 
 
 @click.command()

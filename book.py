@@ -1,5 +1,6 @@
 import jinjiangAPI
 import catalogue
+from instance import *
 
 
 class Book:
@@ -42,15 +43,46 @@ class Book:
         show_book_info += "\nbook_chapter_count:{}".format(self.book_chapter_count)
         show_book_info += "\nbook_score:{}".format(self.book_score)
         show_book_info += "\nbook_is_lock:{}".format(self.book_is_lock)
+        print(show_book_info)
         return show_book_info
 
     def get_catalogue(self):
         response = jinjiangAPI.Chapter.chapter_list(self.book_id)['chapterlist']
         for index, chapter in enumerate(response):
             chapter_info = catalogue.Chapter(chapter_info=chapter, index=index)
-            content_info = catalogue.Content(jinjiangAPI.Chapter.chapter_content(
+            content_info = jinjiangAPI.Chapter.chapter_content(
                 novel_id=self.book_id,
                 chapter_id=chapter_info.chapter_id,
                 vip_chapter=chapter_info.is_vip
-            ))
-            print(content_info)
+            )
+            if chapter_info.original_price > 0 and content_info.get("message") is not None:
+                print("the chapter {} is vip, skip".format(chapter_info.chapter_name))
+                continue
+            content_info = catalogue.Content(content_info)
+            self.save_content(
+                chapter_index=chapter_info.index,
+                chapter_id=chapter_info.chapter_id,
+                chapter_title=content_info.chapter_name,
+                content=content_info.content
+            )
+
+    def test_file(self, file_path: str):
+        return os.path.exists(file_path)
+
+    def save_content(self, chapter_index: int, chapter_id: str, chapter_title: str, content: str):
+        if not self.test_file(os.path.join(Vars.config_text, chapter_id + ".txt")):
+            content_text = f"第 {chapter_index} 章" + chapter_title + "\n" + content.replace("&lt;br&gt;&lt;br&gt;", "\n")
+            TextFile.write(text_path=os.path.join(Vars.config_text, chapter_id + ".txt"), text_content=content_text)
+        else:
+            print("the file is exist, skip")
+
+    def download_cover(self):
+        pass
+
+    def mkdir_content_file(self):
+        Vars.config_text = os.path.join("configs", self.book_name)
+        Vars.out_text_file = os.path.join("downloads", self.book_name)
+        if not os.path.exists(Vars.config_text):
+            os.makedirs(Vars.config_text)
+        if not os.path.exists(Vars.out_text_file):
+            os.makedirs(Vars.out_text_file)
