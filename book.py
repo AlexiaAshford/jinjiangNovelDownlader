@@ -13,6 +13,7 @@ class Book:
         self.book_info = book_info
         self.thread_list = []
         self.speed_of_progress = 0
+        # self.download_lock
         self.book_id = book_info["novelId"]
         self.book_name = book_info["novelName"]
         self.book_author = book_info["authorName"]
@@ -20,7 +21,6 @@ class Book:
         self.book_class = book_info["novelClass"]
         self.book_tags = book_info["novelTags"]
         self.book_tags_id = book_info["novelTagsId"]
-        self.book_size = book_info["novelSize"]
         self.book_chapter_count = book_info["novelChapterCount"]
         self.book_is_lock = book_info["islock"]
         self.book_is_vip = book_info["isVip"]
@@ -41,9 +41,8 @@ class Book:
         show_book_info += "\nbook_class:{}".format(self.book_class)
         show_book_info += "\nbook_tags:{}".format(self.book_tags)
         show_book_info += "\nbook_tags_id:{}".format(self.book_tags_id)
-        show_book_info += "\nbook_size:{}".format(self.book_size)
-        show_book_info += "\nbook_chapter_count:{}".format(self.book_chapter_count)
-        show_book_info += "\nbook_is_lock:{}".format(self.book_is_lock)
+        show_book_info += "\nchapter_count:{}".format(self.book_chapter_count)
+        show_book_info += "\nbook_is_lock:{}\n\n".format(self.book_is_lock)
         print(show_book_info)
         return show_book_info
 
@@ -63,18 +62,16 @@ class Book:
             self.thread_list.append(
                 threading.Thread(target=self.download_content, args=(index, chap.chapter_id, chap.is_vip,))
             )  # add to queue and download in thread
-            for thread in self.thread_list:  # start thread one by one and wait for all thread done
-                thread.start()
-            for thread in self.thread_list:  # wait for all thread to finish and join
-                thread.join()
-            self.thread_list.clear()  # clear thread list and thread queue
+        for thread in self.thread_list:  # start thread one by one and wait for all thread done
+            thread.start()
+        for thread in self.thread_list:  # wait for all thread to finish and join
+            thread.join()
+        self.thread_list.clear()  # clear thread list and thread queue
 
     def download_content(self, chapter_index: int, chapter_id: str, is_vip: bool):
         self.speed_of_progress += 1
         response = jinjiangAPI.Chapter.chapter_content(self.book_id, chapter_id, is_vip)
-        if response.get("message") is not None:
-            print("download_content:", response.get("message"))
-        else:
+        if response.get("message") is None:
             content_info = catalogue.Content(response)
             content_text = f"第 {chapter_index} 章" + content_info.chapter_title
             content_text += "\n" + content_info.content.replace("&lt;br&gt;&lt;br&gt;", "\n")
@@ -83,7 +80,7 @@ class Book:
                 text_content=content_text,
                 mode="w"
             )
-        print("{}/{}".format(self.speed_of_progress, self.book_chapter_count))
+        print("{}/{}".format(self.speed_of_progress, self.book_chapter_count), end="\r")
 
     def download_cover(self):
         pass
