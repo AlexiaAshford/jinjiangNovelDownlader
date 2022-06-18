@@ -1,3 +1,7 @@
+import jinjiangAPI
+import catalogue
+
+
 class Book:
     def __init__(self, book_info: dict):
         self.book_info = book_info
@@ -39,3 +43,9 @@ class Book:
         show_book_info += "\nbook_score:{}".format(self.book_score)
         show_book_info += "\nbook_is_lock:{}".format(self.book_is_lock)
         return show_book_info
+
+    def get_catalogue(self):
+        response = jinjiangAPI.Chapter.chapter_list(self.book_id)['chapterlist']
+        for index, chapter in enumerate(response):
+            chapter_info = catalogue.Chapter(chapter_info=chapter, index=index)
+            print(chapter_info)

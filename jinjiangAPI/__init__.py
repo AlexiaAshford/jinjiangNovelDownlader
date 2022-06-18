@@ -59,7 +59,7 @@ class Book:
 
 class Chapter:
     @staticmethod
-    def chapter_information(novel_id: str, more: int = 0, whole: int = 1) -> dict:
+    def chapter_list(novel_id: str, more: int = 0, whole: int = 1) -> dict:  # get chapter list by novel_id
         return get(url="chapterList", params={"novelId": novel_id, "more": more, "whole": whole})
 
     @staticmethod
