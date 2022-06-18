@@ -53,7 +53,7 @@ class Account:
 
 class Book:
     @staticmethod
-    def book_information(novel_id: str) -> dict:  # get book information by novel_id
+    def novel_basic_info(novel_id: str) -> dict:  # get book information by novel_id
         return get(url="novelbasicinfo", params={"novelId": novel_id})
 
 
