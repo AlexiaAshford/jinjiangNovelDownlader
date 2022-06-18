@@ -1,23 +1,20 @@
 import random
 import time
-
 from pyDes import des, CBC, PAD_PKCS5
 from base64 import b64encode, b64decode
 from instance import *
 from jinjiangAPI import HttpUtil, UrlConstant
 
 
-def get(url: str, params: dict = None, return_type: str = "json"):
-    # if params is not None:
-    #     params.update({"token": Vars.cfg.data.get("user_info").get("token")})
+def get(url: str, params: dict = None, return_type: str = "json"):  # get request
     try:
         api_url = UrlConstant.WEB_HOST + url.replace(UrlConstant.WEB_HOST, "")
         return HttpUtil.get_api(url=api_url, params=params, return_type=return_type)
-    except Exception as err:
+    except Exception as err:  # if error, return None and print error
         print("get_api error: " + str(err))
 
 
-def decrypt(string: str, token: bool = False, key: str = "KK!%G3JdCHJxpAF3%Vg9pN"):
+def decrypt(string: str, token: bool = False, key: str = "KK!%G3JdCHJxpAF3%Vg9pN"):  # decrypt string
     des_cbc = des("00000000", CBC, "1ae2c94b", padmode=PAD_PKCS5)
     if token:  # token is not empty add token to key
         key = key + Vars.cfg.data.get("user_info").get("token")
@@ -25,7 +22,7 @@ def decrypt(string: str, token: bool = False, key: str = "KK!%G3JdCHJxpAF3%Vg9pN
     return des_cbc.decrypt(b64decode(string)).decode("utf-8")
 
 
-def des_encrypt(string: str, token: str = None, key: str = "KK!%G3JdCHJxpAF3%Vg9pN"):
+def des_encrypt(string: str, token: str = None, key: str = "KK!%G3JdCHJxpAF3%Vg9pN"):  # encrypt string
     des_cbc = des("00000000", CBC, "1ae2c94b", padmode=PAD_PKCS5)
     if token is not None:  # token is not empty add token to key
         key = key + token
@@ -33,7 +30,7 @@ def des_encrypt(string: str, token: str = None, key: str = "KK!%G3JdCHJxpAF3%Vg9
     return b64encode(des_cbc.encrypt(string)).decode("utf-8")  # encrypt and encode
 
 
-class Account:
+class Account:  # account class
     @staticmethod
     def login(username: str, password: str) -> dict:  # login and get token
         identifiers = ''.join(random.choice("0123456789") for _ in range(18)) + ":null:null"
@@ -53,13 +50,15 @@ class Account:
 class Book:
     @staticmethod
     def novel_basic_info(novel_id: str) -> dict:  # get book information by novel_id
-        return get(url="novelbasicinfo", params={"novelId": novel_id})
+        params: dict = {"novelId": novel_id}
+        return get(url="novelbasicinfo", params=params)
 
 
 class Chapter:
     @staticmethod
     def get_chapter_list(novel_id: str, more: int = 0, whole: int = 1) -> dict:  # get chapter list by novel_id
-        return get(url="chapterList", params={"novelId": novel_id, "more": more, "whole": whole})
+        params: dict = {"novelId": novel_id, "more": more, "whole": whole}
+        return get(url="chapterList", params=params)
 
     @staticmethod
     def chapter_vip_content(novel_id: str, chapter_id: str) -> dict:
@@ -75,4 +74,5 @@ class Chapter:
 
     @staticmethod
     def chapter_content(novel_id: str, chapter_id: str) -> dict:
-        return get(url="chapterContent", params={"novelId": novel_id, "chapterId": chapter_id})
+        params: dict = {"novelId": novel_id, "chapterId": chapter_id}
+        return get(url="chapterContent", params=params)

@@ -20,24 +20,24 @@ class Chapter:
         self.lastpost_time = chapter_info["lastpost_time"]
         self.is_edit = chapter_info["isEdit"]
 
-    def __str__(self) -> str:
-        show_chapter_info = "chapter_title:{}".format(self.chapter_title)
-        show_chapter_info += "\nchapter_date:{}".format(self.chapter_date)
-        show_chapter_info += "\nchapter_click:{}".format(self.chapter_click)
-        show_chapter_info += "\nchapter_size:{}".format(self.chapter_size)
-        show_chapter_info += "\nchapter_intro:{}".format(self.chapter_intro)
-        show_chapter_info += "\nis_lock:{}".format(self.is_lock)
-        show_chapter_info += "\nis_vip:{}".format(self.is_vip)
-        show_chapter_info += "\npoint:{}".format(self.point)
-        show_chapter_info += "\noriginal_price:{}".format(self.original_price)
-        show_chapter_info += "\npointfree_vip:{}".format(self.pointfree_vip)
-        show_chapter_info += "\nis_protect:{}".format(self.is_protect)
-        show_chapter_info += "\noriginal_price_message:{}".format(self.original_price_message)
-        show_chapter_info += "\npoint_message:{}".format(self.point_message)
-        show_chapter_info += "\nchapter_message:{}".format(self.chapter_message)
-        show_chapter_info += "\nlastpost_time:{}".format(self.lastpost_time)
-        show_chapter_info += "\nis_edit:{}".format(self.is_edit)
-        return show_chapter_info
+    # def __str__(self) -> str:
+    #     show_chapter_info = "chapter_title:{}".format(self.chapter_title)
+    #     show_chapter_info += "\nchapter_date:{}".format(self.chapter_date)
+    #     show_chapter_info += "\nchapter_click:{}".format(self.chapter_click)
+    #     show_chapter_info += "\nchapter_size:{}".format(self.chapter_size)
+    #     show_chapter_info += "\nchapter_intro:{}".format(self.chapter_intro)
+    #     show_chapter_info += "\nis_lock:{}".format(self.is_lock)
+    #     show_chapter_info += "\nis_vip:{}".format(self.is_vip)
+    #     show_chapter_info += "\npoint:{}".format(self.point)
+    #     show_chapter_info += "\noriginal_price:{}".format(self.original_price)
+    #     show_chapter_info += "\npointfree_vip:{}".format(self.pointfree_vip)
+    #     show_chapter_info += "\nis_protect:{}".format(self.is_protect)
+    #     show_chapter_info += "\noriginal_price_message:{}".format(self.original_price_message)
+    #     show_chapter_info += "\npoint_message:{}".format(self.point_message)
+    #     show_chapter_info += "\nchapter_message:{}".format(self.chapter_message)
+    #     show_chapter_info += "\nlastpost_time:{}".format(self.lastpost_time)
+    #     show_chapter_info += "\nis_edit:{}".format(self.is_edit)
+    #     return show_chapter_info
 
 
 class Content:
@@ -54,15 +54,15 @@ class Content:
         self.author_id = content_info["authorid"]
         self.autobuy_status = content_info["autobuystatus"]
 
-    def __str__(self) -> str:
-        show_content_info = "chapter_id:{}".format(self.chapter_id)
-        show_content_info += "\nchapter_title:{}".format(self.chapter_title)
-        show_content_info += "\nchapter_intro:{}".format(self.chapter_intro)
-        show_content_info += "\nchapter_size:{}".format(self.chapter_size)
-        show_content_info += "\nchapter_date:{}".format(self.chapter_date)
-        show_content_info += "\nsay_body:{}".format(self.say_body)
-        show_content_info += "\ncontent:{}".format(self.content)
-        show_content_info += "\nis_vip:{}".format(self.is_vip)
-        show_content_info += "\nauthor_id:{}".format(self.author_id)
-        show_content_info += "\nautobuy_status:{}".format(self.autobuy_status)
-        return show_content_info
+    # def __str__(self) -> str:
+    #     show_content_info = "chapter_id:{}".format(self.chapter_id)
+    #     show_content_info += "\nchapter_title:{}".format(self.chapter_title)
+    #     show_content_info += "\nchapter_intro:{}".format(self.chapter_intro)
+    #     show_content_info += "\nchapter_size:{}".format(self.chapter_size)
+    #     show_content_info += "\nchapter_date:{}".format(self.chapter_date)
+    #     show_content_info += "\nsay_body:{}".format(self.say_body)
+    #     show_content_info += "\ncontent:{}".format(self.content)
+    #     show_content_info += "\nis_vip:{}".format(self.is_vip)
+    #     show_content_info += "\nauthor_id:{}".format(self.author_id)
+    #     show_content_info += "\nautobuy_status:{}".format(self.autobuy_status)
+    #     return show_content_info

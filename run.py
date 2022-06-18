@@ -37,8 +37,8 @@ def get_book_info(bookid: str):
             Vars.current_book = book.Book(Vars.current_book)  # create book object from book information.
             Vars.current_book.book_detailed()  # print book information with book detail.
             Vars.current_book.mkdir_content_file()  # create book content file.
-            Vars.current_book.multi_thread_download_content()  # download book content with multi thread.
-            Vars.current_book.out_text_file()  # output book content to text file.
+            if Vars.current_book.multi_thread_download_content():  # download book content with multi thread.
+                Vars.current_book.out_text_file()  # output book content to text file.
         else:
             print(Vars.current_book["message"])  # print book information error.
 

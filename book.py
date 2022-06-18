@@ -4,9 +4,6 @@ from instance import *
 import threading
 
 
-def exists_file(file_path: str):
-    return os.path.exists(file_path)
-
 
 class Book:
     def __init__(self, book_info: dict):
@@ -29,10 +26,7 @@ class Book:
         self.vip_chapterid = book_info["vipChapterid"]
         self.book_review_score = book_info["novelReviewScore"]
         self.book_author_say_rule = book_info["authorsayrule"]
-        self.series = book_info["series"]
         self.protagonist = book_info["protagonist"]
-        self.costar = book_info["costar"]
-        self.other = book_info["other"]
 
     def book_detailed(self) -> str:
         show_book_info = "book_name:{}".format(self.book_name)
@@ -42,7 +36,6 @@ class Book:
         show_book_info += "\nbook_tags:{}".format(self.book_tags)
         show_book_info += "\nbook_tags_id:{}".format(self.book_tags_id)
         show_book_info += "\nchapter_count:{}".format(self.book_chapter_count)
-        show_book_info += "\nbook_is_lock:{}\n\n".format(self.book_is_lock)
         print(show_book_info)
         return show_book_info
 
@@ -51,10 +44,10 @@ class Book:
         if response.get("message") is not None:
             return print(response.get("message"))
         if len(response['chapterlist']) == 0:
+            print("the catalogue is empty")
             return print("the catalogue is empty")
         for index, chapter in enumerate(response['chapterlist'], start=1):
             chap = catalogue.Chapter(chapter_info=chapter, index=index)
-            # content_info = jinjiangAPI.Chapter.chapter_content(self.book_id, chap.chapter_id, chap.is_vip)
             if exists_file(os.path.join(Vars.config_text, chap.chapter_id + ".txt")):  # if the file exists, skip it
                 continue
             # if chap.original_price > 0:
@@ -68,6 +61,7 @@ class Book:
         for thread in self.thread_list:  # wait for all thread to finish and join
             thread.join()
         self.thread_list.clear()  # clear thread list and thread queue
+        return True
 
     def download_content(self, chapter_index: int, chapter_id: str, is_vip: bool):
         self.pool_sema.acquire()
@@ -76,6 +70,9 @@ class Book:
             response = jinjiangAPI.Chapter.chapter_vip_content(self.book_id, chapter_id)
             if response.get("message") is None:
                 response['content'] = jinjiangAPI.decrypt(response['content'], token=True)
+            else:
+                self.pool_sema.release()
+                return print(response.get("message"))
         else:
             response = jinjiangAPI.Chapter.chapter_content(self.book_id, chapter_id)
         if isinstance(response, dict) and response.get("message") is None:
@@ -100,7 +97,7 @@ class Book:
         config_text_file_name_list = os.listdir(Vars.config_text)
         config_text_file_name_list.sort(key=lambda x: int(x.split(".")[0]))
         out_text_path = os.path.join(Vars.out_text_file, self.book_name + ".txt")
-        if os.path.exists(out_text_path):
+        if exists_file(out_text_path):
             os.remove(out_text_path)
         for file_name in config_text_file_name_list:
             if file_name.endswith(".txt"):
@@ -108,12 +105,13 @@ class Book:
                     text_path=out_text_path, mode="a",
                     text_content="\n\n\n" + TextFile.read(os.path.join(Vars.config_text, file_name))
                 )
+
         print("out text file done! path:", out_text_path)
 
     def mkdir_content_file(self):
         Vars.config_text = os.path.join("configs", self.book_name)
         Vars.out_text_file = os.path.join("downloads", self.book_name)
-        if not os.path.exists(Vars.config_text):
+        if not exists_file(Vars.config_text):
             os.makedirs(Vars.config_text)
-        if not os.path.exists(Vars.out_text_file):
+        if not exists_file(Vars.out_text_file):
             os.makedirs(Vars.out_text_file)
