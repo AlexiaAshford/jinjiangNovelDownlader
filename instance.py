@@ -84,6 +84,9 @@ def set_config():
     if not isinstance(Vars.cfg.data.get("user_info"), dict):
         Vars.cfg.data['user_info'] = {}
         save_config = True
+    if not isinstance(Vars.cfg.data.get("versionCode"), int):
+        Vars.cfg.data['versionCode'] = 206
+        save_config = True
     if Vars.cfg.data.get("downloaded_book_id_list") is None:
         Vars.cfg.data['downloaded_book_id_list'] = []
         save_config = True
@@ -101,7 +104,7 @@ def set_config():
 
 
 def get_id(url: str) -> str:
-    result = re.compile(r'(\d+)').findall(url)
+    result = re.compile(r'(\d+)').findall(str(url))
     if len(result) > 0 and str(result[0]).isdigit():
         return result[0]
     print("[warning] get_id failed", url)

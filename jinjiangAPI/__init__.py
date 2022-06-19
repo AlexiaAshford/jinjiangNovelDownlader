@@ -59,6 +59,27 @@ class Book:  # book class for jinjiang NOVEL API
         params: dict = {"novelId": novel_id}
         return get(url="novelbasicinfo", params=params)
 
+    @staticmethod
+    def search_info(keyword: str, search_id: int = 1, page: int = 0) -> [dict, None]:  # search book by keyword
+        if page == 0:
+            params: dict = {"keyword": keyword, "versionCode": Vars.cfg.data['versionCode'], "type": search_id}
+        else:
+            if Vars.cfg.data.get("user_info").get("token") == "":
+                params: dict = {
+                    "keyword": keyword,
+                    "type": search_id,
+                    "page": page,
+                    "pageSize": 20,
+                    "searchType": 8,
+                    "sortMode": "DESC",
+                    "token": Vars.cfg.data.get("user_info").get("token"),
+                    "versionCode": Vars.cfg.data['versionCode']
+                }
+            else:
+                return print("token is empty you can't use this function")
+
+        return get(url="associativeSearch", params=params)
+
 
 class Chapter:  # chapter class for jinjiang NOVEL API
     @staticmethod
@@ -71,7 +92,7 @@ class Chapter:  # chapter class for jinjiang NOVEL API
         params = {
             "novelId": novel_id,
             "chapterId": chapter_id,
-            "versionCode": 206,
+            "versionCode": Vars.cfg.data['versionCode'],
             "readState": "readahead",
             "updateTime": int(time.time()),
             "token": Vars.cfg.data.get("user_info").get("token")

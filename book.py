@@ -97,7 +97,8 @@ class Book:
         self.pool_sema.release()
 
     def download_book_cover(self):
-        cover_url = self.book_info['originalCover'] if self.book_info['originalCover'] else self.book_info['cover']
+        cover_url = self.book_info.get("originalCover") if self.book_info.get("originalCover") \
+            else self.book_info.get("novelCover")
         if not os.path.exists(os.path.join(Vars.config_text, self.book_id + ".jpg")):
             png_file = jinjiangAPI.get(url=cover_url, return_type="content", app_url=False)
             open(os.path.join(Vars.config_text, self.book_id + ".jpg"), "wb").write(png_file)
