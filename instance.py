@@ -100,13 +100,9 @@ def set_config():
         Vars.cfg.save()
 
 
-def exists_file(file_path: str):
-    return os.path.exists(file_path)
-
-
 def get_id(url: str) -> str:
     result = re.compile(r'(\d+)').findall(url)
-    if len(result) > 0 and result[0].isdigit() and len(result[0]) == 9:
+    if len(result) > 0 and str(result[0]).isdigit():
         return result[0]
     print("[warning] get_id failed", url)
 

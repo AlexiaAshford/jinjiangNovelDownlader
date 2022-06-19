@@ -45,19 +45,16 @@ class Book:
 
     def multi_thread_download_content(self):
         response = jinjiangAPI.Chapter.get_chapter_list(self.book_id)
-        if response.get("message") is not None:
+        if response.get("message") is not None:  # if the book is not exist or the book is locked by jinjiang server
             return print(response.get("message"))
-        if len(response['chapterlist']) == 0:
-            print("the catalogue is empty")
+        if len(response['chapterlist']) == 0:  # if the book chapter list is empty
             return print("the catalogue is empty")
         for index, chapter in enumerate(response['chapterlist'], start=1):
             chap = catalogue.Chapter(chapter_info=chapter, index=index)
-            if exists_file(os.path.join(Vars.config_text, chap.chapter_id + ".txt")):  # if the file exists, skip it
-                continue
-            # if chap.original_price > 0:
-            #     continue
+            if os.path.exists(os.path.join(Vars.config_text, chap.chapter_id + ".txt")):  # if the file exists, skip it
+                continue  # skip the chapter if the file exists
             self.thread_list.append(
-                threading.Thread(target=self.download_content, args=(index, chap.chapter_id, chap.is_vip,))
+                threading.Thread(target=self.download_content, args=(index, chap,))
             )  # add to queue and download in thread
 
         for thread in self.thread_list:  # start thread one by one and wait for all thread done
@@ -65,31 +62,31 @@ class Book:
         for thread in self.thread_list:  # wait for all thread to finish and join
             thread.join()
         self.thread_list.clear()  # clear thread list and thread queue
-        return True
+        return True  # all thread done and clear thread list and thread queue
 
-    def download_content(self, chapter_index: int, chapter_id: str, is_vip: bool):
+    def download_content(self, chapter_index: int, chapter_info: catalogue.Chapter):
         self.pool_sema.acquire()
         self.speed_of_progress += 1
-        if is_vip == 2:
+        if chapter_info.is_vip == 2 and chapter_info.original_price > 0:
             if Vars.cfg.data.get("user_info").get("token") == "":
                 print("you need login first to download vip chapter")
                 self.pool_sema.release()
                 return False
-            response = jinjiangAPI.Chapter.chapter_vip_content(self.book_id, chapter_id)
+            response = jinjiangAPI.Chapter.chapter_vip_content(self.book_id, chapter_info.chapter_id)
             if response.get("message") is None:
                 response['content'] = jinjiangAPI.decrypt(response['content'], token=True)
             else:
                 self.pool_sema.release()
                 return print(response.get("message"))
         else:
-            response = jinjiangAPI.Chapter.chapter_content(self.book_id, chapter_id)
+            response = jinjiangAPI.Chapter.chapter_content(self.book_id, chapter_info.chapter_id)
 
         if isinstance(response, dict) and response.get("message") is None:
             content_info = catalogue.Content(response)
             content_text = f"第 {chapter_index} 章: " + content_info.chapter_title
             content_text += "\n" + content_info.content
             TextFile.write(
-                text_path=os.path.join(Vars.config_text, chapter_id + ".txt"),
+                text_path=os.path.join(Vars.config_text, chapter_info.chapter_id + ".txt"),
                 text_content=replace_html(content_text),
                 mode="w"
             )
@@ -101,7 +98,7 @@ class Book:
 
     def download_book_cover(self):
         cover_url = self.book_info['originalCover'] if self.book_info['originalCover'] else self.book_info['cover']
-        if not exists_file(os.path.join(Vars.config_text, self.book_id + ".jpg")):
+        if not os.path.exists(os.path.join(Vars.config_text, self.book_id + ".jpg")):
             png_file = jinjiangAPI.get(url=cover_url, return_type="content", app_url=False)
             open(os.path.join(Vars.config_text, self.book_id + ".jpg"), "wb").write(png_file)
         else:
@@ -122,9 +119,9 @@ class Book:
         print("out text file done! path:", out_text_path)
 
     def mkdir_content_file(self):
-        Vars.config_text = os.path.join("configs", self.book_name)
-        Vars.out_text_file = os.path.join("downloads", self.book_name)
-        if not exists_file(Vars.config_text):
+        Vars.config_text = os.path.join(Vars.cfg.data['config_path'], self.book_name)
+        Vars.out_text_file = os.path.join(Vars.cfg.data['out_path'], self.book_name)
+        if not os.path.exists(Vars.config_text):
             os.makedirs(Vars.config_text)
-        if not exists_file(Vars.out_text_file):
+        if not os.path.exists(Vars.out_text_file):
             os.makedirs(Vars.out_text_file)

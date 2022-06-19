@@ -32,7 +32,7 @@ def shell_parser():
 
 def get_book_info(bookid: str):
     if bookid is not None:
-        Vars.current_book = jinjiangAPI.Book.novel_basic_info(bookid)  # get book information by novel_id
+        Vars.current_book = jinjiangAPI.Book.novel_basic_info(get_id(bookid))  # get book information by novel_id
         if Vars.current_book.get("message") is None:  # get book information success then print book information.
             Vars.current_book = book.Book(Vars.current_book)  # create book object from book information.
             Vars.current_book.show_book_detailed()  # print book information with book detail.
