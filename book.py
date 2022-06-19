@@ -125,3 +125,12 @@ class Book:
             os.makedirs(Vars.config_text)
         if not os.path.exists(Vars.out_text_file):
             os.makedirs(Vars.out_text_file)
+
+    def set_downloaded_book_id_in_list(self):
+        if isinstance(Vars.cfg.data['downloaded_book_id_list'], list):
+            if self.book_id not in Vars.cfg.data['downloaded_book_id_list']:
+                Vars.cfg.data['downloaded_book_id_list'].append(self.book_id)
+                Vars.cfg.save()
+            return True
+        Vars.cfg.data['downloaded_book_id_list'] = [self.book_id]
+        Vars.cfg.save()

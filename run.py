@@ -16,7 +16,7 @@ def shell_parser():
         login_account(args.account)
 
     if args.update:
-        # shell_update()
+        # Vars.cfg.data['update'] = True
         pass
 
     if args.clear_cache:
@@ -40,6 +40,7 @@ def get_book_info(bookid: str):
             Vars.current_book.download_book_cover()  # download book cover.
             if Vars.current_book.multi_thread_download_content():  # download book content with multi thread.
                 Vars.current_book.out_text_file()  # output book content to text file.
+                Vars.current_book.set_downloaded_book_id_in_list()  # set book id in downloaded book list.
         else:
             print(Vars.current_book["message"])  # print book information error.
 
@@ -48,7 +49,7 @@ def login_account(account: str):
     if account is None:
         return False
     if "----" in account:  # if account is a ----, then use default account and password
-        username, password = account.split("----")
+        username, password = account.split("----")  # get username and password from account
     else:
         username, password = account.split(" ")
     response = jinjiangAPI.Account.login(username, password)
