@@ -4,40 +4,44 @@ from instance import *
 import threading
 
 
+def replace_html(content_text: str):
+    return content_text.replace("&lt;br&gt;&lt;br&gt;", "\n") \
+        .replace("&lt;br&gt;", "\n").replace("&lt;p&gt;", "\n") \
+        .replace("&lt;/p&gt;", "\n") \
+        .replace("&lt;/br&gt;", "\n")
+
 
 class Book:
     def __init__(self, book_info: dict):
         self.book_info = book_info
         self.thread_list = []
         self.speed_of_progress = 0
-        self.pool_sema = threading.BoundedSemaphore(Vars.cfg.data['max_thread'])
+        self.book_detailed = ""
         self.book_id = book_info["novelId"]
         self.book_name = book_info["novelName"]
         self.book_author = book_info["authorName"]
-        self.book_intro = book_info["novelIntroShort"]
         self.book_class = book_info["novelClass"]
         self.book_tags = book_info["novelTags"]
-        self.book_tags_id = book_info["novelTagsId"]
-        self.book_chapter_count = book_info["novelChapterCount"]
         self.book_is_lock = book_info["islock"]
         self.book_is_vip = book_info["isVip"]
         self.book_is_package = book_info["isPackage"]
         self.book_is_sign = book_info["isSign"]
+        self.protagonist = book_info["protagonist"]
         self.vip_chapterid = book_info["vipChapterid"]
+        self.book_intro = book_info["novelIntroShort"]
         self.book_review_score = book_info["novelReviewScore"]
         self.book_author_say_rule = book_info["authorsayrule"]
-        self.protagonist = book_info["protagonist"]
+        self.book_chapter_count = book_info["novelChapterCount"]
+        self.pool_sema = threading.BoundedSemaphore(Vars.cfg.data['max_thread'])
 
-    def book_detailed(self) -> str:
-        show_book_info = "book_name:{}".format(self.book_name)
-        show_book_info += "\nbook_author:{}".format(self.book_author)
-        show_book_info += "\nbook_intro:{}".format(self.book_intro)
-        show_book_info += "\nbook_class:{}".format(self.book_class)
-        show_book_info += "\nbook_tags:{}".format(self.book_tags)
-        show_book_info += "\nbook_tags_id:{}".format(self.book_tags_id)
-        show_book_info += "\nchapter_count:{}".format(self.book_chapter_count)
-        print(show_book_info)
-        return show_book_info
+    def show_book_detailed(self):
+        self.book_detailed = "book_name:{}".format(self.book_name)
+        self.book_detailed += "\nbook_author:{}".format(self.book_author)
+        self.book_detailed += "\nbook_class:{}".format(self.book_class)
+        self.book_detailed += "\nbook_tags:{}".format(self.book_tags)
+        self.book_detailed += "\nchapter_count:{}".format(self.book_chapter_count)
+        self.book_detailed += "\nbook_intro:{}".format(self.book_intro)
+        print(self.book_detailed)
 
     def multi_thread_download_content(self):
         response = jinjiangAPI.Chapter.get_chapter_list(self.book_id)
@@ -67,6 +71,10 @@ class Book:
         self.pool_sema.acquire()
         self.speed_of_progress += 1
         if is_vip == 2:
+            if Vars.cfg.data.get("user_info").get("token") == "":
+                print("you need login first to download vip chapter")
+                self.pool_sema.release()
+                return False
             response = jinjiangAPI.Chapter.chapter_vip_content(self.book_id, chapter_id)
             if response.get("message") is None:
                 response['content'] = jinjiangAPI.decrypt(response['content'], token=True)
@@ -75,13 +83,14 @@ class Book:
                 return print(response.get("message"))
         else:
             response = jinjiangAPI.Chapter.chapter_content(self.book_id, chapter_id)
+
         if isinstance(response, dict) and response.get("message") is None:
             content_info = catalogue.Content(response)
             content_text = f"第 {chapter_index} 章: " + content_info.chapter_title
-            content_text += "\n" + content_info.content.replace("&lt;br&gt;&lt;br&gt;", "\n")
+            content_text += "\n" + content_info.content
             TextFile.write(
                 text_path=os.path.join(Vars.config_text, chapter_id + ".txt"),
-                text_content=content_text,
+                text_content=replace_html(content_text),
                 mode="w"
             )
             print("{}: {}/{}".format(self.book_name, self.speed_of_progress, self.book_chapter_count), end="\r")
@@ -90,15 +99,19 @@ class Book:
                 print(response.get("message"))
         self.pool_sema.release()
 
-    def download_cover(self):
-        pass
+    def download_book_cover(self):
+        cover_url = self.book_info['originalCover'] if self.book_info['originalCover'] else self.book_info['cover']
+        if not exists_file(os.path.join(Vars.config_text, self.book_id + ".jpg")):
+            png_file = jinjiangAPI.get(url=cover_url, return_type="content", app_url=False)
+            open(os.path.join(Vars.config_text, self.book_id + ".jpg"), "wb").write(png_file)
+        else:
+            print("the cover is exists, skip it")
 
     def out_text_file(self):
         config_text_file_name_list = os.listdir(Vars.config_text)
-        config_text_file_name_list.sort(key=lambda x: int(x.split(".")[0]))
-        out_text_path = os.path.join(Vars.out_text_file, self.book_name + ".txt")
-        if exists_file(out_text_path):
-            os.remove(out_text_path)
+        config_text_file_name_list.sort(key=lambda x: int(x.split(".")[0]))  # sort by chapter index number
+        out_text_path = os.path.join(Vars.out_text_file, self.book_name + ".txt")  # out text file path
+        TextFile.write(text_path=out_text_path, mode="w", text_content=self.book_detailed)  # write book info to file
         for file_name in config_text_file_name_list:
             if file_name.endswith(".txt"):
                 TextFile.write(
