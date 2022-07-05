@@ -17,6 +17,8 @@ class Book:
         self.thread_list = []
         self.speed_of_progress = 0
         self.book_detailed = ""
+        self.not_purchased_list = []
+        self.download_successful_list = []
         self.book_id = book_info["novelId"]
         self.book_name = book_info["novelName"]
         self.book_author = book_info["authorName"]
@@ -34,14 +36,24 @@ class Book:
         self.book_chapter_count = book_info["novelChapterCount"]
         self.pool_sema = threading.BoundedSemaphore(Vars.cfg.data['max_thread'])
 
-    def show_book_detailed(self):
+    def start_download_book_and_get_detailed(self):
         self.book_detailed = "book_name:{}".format(self.book_name)
         self.book_detailed += "\nbook_author:{}".format(self.book_author)
         self.book_detailed += "\nbook_class:{}".format(self.book_class)
         self.book_detailed += "\nbook_tags:{}".format(self.book_tags)
         self.book_detailed += "\nchapter_count:{}".format(self.book_chapter_count)
         self.book_detailed += "\nbook_intro:{}".format(self.book_intro)
-        print(self.book_detailed)
+
+        self.mkdir_content_file()  # create book content file.
+        if not os.path.exists(os.path.join(Vars.config_text, self.book_id + ".jpg")):
+            png_file = jinjiangAPI.get(
+                url=self.book_info.get("originalCover") if self.book_info.get("originalCover") else
+                self.book_info.get("novelCover"),
+                return_type="content", app_url=False
+            )  # download book cover if not exists in the config_text folder
+            open(os.path.join(Vars.config_text, self.book_id + ".jpg"), "wb").write(png_file)
+        else:
+            print("the cover is exists, skip it")  # if the cover exists, skip it
 
     def multi_thread_download_content(self):
         response = jinjiangAPI.Chapter.get_chapter_list(self.book_id)
@@ -75,9 +87,11 @@ class Book:
             response = jinjiangAPI.Chapter.chapter_vip_content(self.book_id, chapter_info.chapter_id)
             if response.get("message") is None:
                 response['content'] = jinjiangAPI.decrypt(response['content'], token=True)
+                self.download_successful_list.append(chapter_info)
             else:
                 self.pool_sema.release()
-                return print(response.get("message"))
+                self.not_purchased_list.append(response)  # if the chapter is vip add to not_purchased_list
+                return False
         else:
             response = jinjiangAPI.Chapter.chapter_content(self.book_id, chapter_info.chapter_id)
 
@@ -93,7 +107,8 @@ class Book:
             print("{}: {}/{}".format(self.book_name, self.speed_of_progress, self.book_chapter_count), end="\r")
         else:
             if isinstance(response, dict) and "购买章节" in response.get("message"):
-                print(response.get("message"))
+                print("download_content:", response.get("message"))
+        self.download_successful_list.append(response)
         self.pool_sema.release()
 
     def download_book_cover(self):
@@ -105,19 +120,31 @@ class Book:
         else:
             print("the cover is exists, skip it")
 
-    def out_text_file(self):
+    def show_download_results(self):  # show the download results
+        print("successful download chapter:", len(self.download_successful_list))
+        print("Not Purchased Chapter length:", len(self.not_purchased_list))
+        for chapter_index, chapter_info in enumerate(self.not_purchased_list):
+            print(
+                "顺序:", chapter_index,
+                "\t原价:", chapter_info.get("originalPrice"),
+                "\t章节名称:", chapter_info.get("chapterName")
+            )
+
+    def out_put_text_file(self):
         config_text_file_name_list = os.listdir(Vars.config_text)
         config_text_file_name_list.sort(key=lambda x: int(x.split(".")[0]))  # sort by chapter index number
-        out_text_path = os.path.join(Vars.out_text_file, self.book_name + ".txt")  # out text file path
-        TextFile.write(text_path=out_text_path, mode="w", text_content=self.book_detailed)  # write book info to file
+        TextFile.write(
+            text_path=os.path.join(Vars.out_text_file, self.book_name + ".txt"),
+            mode="w", text_content=self.book_detailed
+        )  # write book info to file
         for file_name in config_text_file_name_list:
             if file_name.endswith(".txt"):
                 TextFile.write(
-                    text_path=out_text_path, mode="a",
+                    text_path=os.path.join(Vars.out_text_file, self.book_name + ".txt"), mode="a",
                     text_content="\n\n\n" + TextFile.read(os.path.join(Vars.config_text, file_name))
                 )
 
-        print("out text file done! path:", out_text_path)
+        print("out text file done! path:", os.path.join(Vars.out_text_file, self.book_name + ".txt"))
 
     def mkdir_content_file(self):
         Vars.config_text = os.path.join(Vars.cfg.data['config_path'], self.book_name)

@@ -52,12 +52,14 @@ def get_book_info(bookid: str):
         Vars.current_book = jinjiangAPI.Book.novel_basic_info(get_id(bookid))  # get book information by novel_id
         if Vars.current_book.get("message") is None:  # get book information success then print book information.
             Vars.current_book = book.Book(Vars.current_book)  # create book object from book information.
-            Vars.current_book.show_book_detailed()  # print book information with book detail.
-            Vars.current_book.mkdir_content_file()  # create book content file.
-            Vars.current_book.download_book_cover()  # download book cover.
+            Vars.current_book.start_download_book_and_get_detailed()  # start download book
+            print(Vars.current_book.book_detailed)  # print book information with book detail.
             if Vars.current_book.multi_thread_download_content():  # download book content with multi thread.
-                Vars.current_book.out_text_file()  # output book content to text file.
+                Vars.current_book.show_download_results()  # show download results after download.
+                Vars.current_book.out_put_text_file()  # output book content to text file.
                 Vars.current_book.set_downloaded_book_id_in_list()  # set book id in downloaded book list.
+            else:
+                print(f"download bookid:{bookid} failed, please try again.")
         else:
             print(Vars.current_book["message"])  # print book information error.
 
@@ -104,5 +106,4 @@ def login_account(account: str):
 
 if __name__ == '__main__':
     set_config()
-    search_book("百合")
     shell_parser()
