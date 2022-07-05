@@ -111,15 +111,6 @@ class Book:
         self.download_successful_list.append(response)
         self.pool_sema.release()
 
-    def download_book_cover(self):
-        cover_url = self.book_info.get("originalCover") if self.book_info.get("originalCover") \
-            else self.book_info.get("novelCover")
-        if not os.path.exists(os.path.join(Vars.config_text, self.book_id + ".jpg")):
-            png_file = jinjiangAPI.get(url=cover_url, return_type="content", app_url=False)
-            open(os.path.join(Vars.config_text, self.book_id + ".jpg"), "wb").write(png_file)
-        else:
-            print("the cover is exists, skip it")
-
     def show_download_results(self):  # show the download results
         print("successful download chapter:", len(self.download_successful_list))
         print("Not Purchased Chapter length:", len(self.not_purchased_list))

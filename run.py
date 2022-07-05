@@ -13,6 +13,7 @@ def shell_parser():
     parser.add_argument("-clear", "--clear_cache", dest="clear_cache", default=False, action="store_true")
     parser.add_argument("-l", "--login", default=None, dest="account", help="login account")
     args = parser.parse_args()
+
     if args.account:
         login_account(args.account)
 
@@ -64,20 +65,28 @@ def get_book_info(bookid: str):
             print(Vars.current_book["message"])  # print book information error.
 
 
-def search_book(search_name: str, next_page: dict = None):
+def search_book(search_name: str, next_page: int = 0):
     if search_name is None:
         return False
-    response = jinjiangAPI.Book.search_info(search_name)
+    response = jinjiangAPI.Book.search_info(keyword=search_name, page=next_page)
     if response.get("code") == '200':
         for index, book_info in enumerate(response["data"]):
             print("index:", index, "novelId:", book_info["novelId"], "novelName:", book_info["novelName"])
-        input_index = input("please input search index: ")
+        print("next page:[next or n]\t previous page:[previous or p], exit:[exit or e]")
+        input_index = input("please input search index:")
         if str(input_index).isdigit() and int(input_index) < len(response["data"]):
             get_book_info(response["data"][int(input_index)]["novelId"])
-        # elif input_index == "next":
-        #     get_book_info(response["data"][0]["novelId"])
+        elif input_index == "next" or input_index == "n":
+            search_book(search_name=search_name, next_page=next_page + 1)
+        elif input_index == "previous" or input_index == "p":
+            if next_page > 0:
+                search_book(search_name=search_name, next_page=next_page - 1)
+            else:
+                print("no previous page!")
+        elif input_index == "exit" or input_index == "e":
+            return False
         else:
-            print("input index is not digit or out of range")
+            print("input index is not digit or out of range, please input again.")
     else:
         print("search failed", response["message"])
 
@@ -106,4 +115,7 @@ def login_account(account: str):
 
 if __name__ == '__main__':
     set_config()
-    shell_parser()
+    try:
+        shell_parser()
+    except KeyboardInterrupt:
+        print("\n exit program by keyboard interrupt")
