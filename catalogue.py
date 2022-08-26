@@ -49,20 +49,13 @@ class Content:
         self.chapter_size = content_info["chapterSize"]
         self.chapter_date = content_info["chapterDate"]
         self.say_body = content_info["sayBody"]
-        self.content = content_info["content"]
         self.is_vip = content_info["isvip"]
         self.author_id = content_info["authorid"]
         self.autobuy_status = content_info["autobuystatus"]
 
-    # def __str__(self) -> str:
-    #     show_content_info = "chapter_id:{}".format(self.chapter_id)
-    #     show_content_info += "\nchapter_title:{}".format(self.chapter_title)
-    #     show_content_info += "\nchapter_intro:{}".format(self.chapter_intro)
-    #     show_content_info += "\nchapter_size:{}".format(self.chapter_size)
-    #     show_content_info += "\nchapter_date:{}".format(self.chapter_date)
-    #     show_content_info += "\nsay_body:{}".format(self.say_body)
-    #     show_content_info += "\ncontent:{}".format(self.content)
-    #     show_content_info += "\nis_vip:{}".format(self.is_vip)
-    #     show_content_info += "\nauthor_id:{}".format(self.author_id)
-    #     show_content_info += "\nautobuy_status:{}".format(self.autobuy_status)
-    #     return show_content_info
+    @property
+    def content(self):
+        return self.content_info["content"].replace("&lt;br&gt;&lt;br&gt;", "\n") \
+            .replace("&lt;br&gt;", "\n").replace("&lt;p&gt;", "\n") \
+            .replace("&lt;/p&gt;", "\n") \
+            .replace("&lt;/br&gt;", "\n")

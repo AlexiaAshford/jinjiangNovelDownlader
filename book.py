@@ -4,13 +4,6 @@ from instance import *
 import threading
 
 
-def replace_html(content_text: str):
-    return content_text.replace("&lt;br&gt;&lt;br&gt;", "\n") \
-        .replace("&lt;br&gt;", "\n").replace("&lt;p&gt;", "\n") \
-        .replace("&lt;/p&gt;", "\n") \
-        .replace("&lt;/br&gt;", "\n")
-
-
 class Book:
     def __init__(self, book_info: dict):
         self.book_info = book_info
@@ -37,12 +30,12 @@ class Book:
         self.pool_sema = threading.BoundedSemaphore(Vars.cfg.data['max_thread'])
 
     def start_download_book_and_get_detailed(self):
-        self.book_detailed = "book_name:{}".format(self.book_name)
-        self.book_detailed += "\nbook_author:{}".format(self.book_author)
-        self.book_detailed += "\nbook_class:{}".format(self.book_class)
-        self.book_detailed += "\nbook_tags:{}".format(self.book_tags)
-        self.book_detailed += "\nchapter_count:{}".format(self.book_chapter_count)
-        self.book_detailed += "\nbook_intro:{}".format(self.book_intro)
+        self.book_detailed = "[info]书籍名称:{}".format(self.book_name)
+        self.book_detailed += "\n[info]书籍作者:{}".format(self.book_author)
+        self.book_detailed += "\n[info]书籍分类:{}".format(self.book_class)
+        self.book_detailed += "\n[info]书籍标签:{}".format(self.book_tags)
+        self.book_detailed += "\n[info]章节总数:{}".format(self.book_chapter_count)
+        self.book_detailed += "\n[info]书籍简介:{}".format(self.book_intro)
 
         self.mkdir_content_file()  # create book content file.
         if not os.path.exists(os.path.join(Vars.config_text, self.book_id + ".jpg")):
@@ -97,12 +90,10 @@ class Book:
 
         if isinstance(response, dict) and response.get("message") is None:
             content_info = catalogue.Content(response)
-            content_text = f"第 {chapter_index} 章: " + content_info.chapter_title
-            content_text += "\n" + content_info.content
+            content_title = f"第 {chapter_index} 章: " + content_info.chapter_title
             TextFile.write(
                 text_path=os.path.join(Vars.config_text, chapter_info.chapter_id + ".txt"),
-                text_content=replace_html(content_text),
-                mode="w"
+                text_content=content_title + "\n" + content_info.content, mode="w"
             )
             print("{}: {}/{}".format(self.book_name, self.speed_of_progress, self.book_chapter_count), end="\r")
         else:
@@ -130,10 +121,8 @@ class Book:
         )  # write book info to file
         for file_name in config_text_file_name_list:
             if file_name.endswith(".txt"):
-                TextFile.write(
-                    text_path=os.path.join(Vars.out_text_file, self.book_name + ".txt"), mode="a",
-                    text_content="\n\n\n" + TextFile.read(os.path.join(Vars.config_text, file_name))
-                )
+                TextFile.write(text_path=os.path.join(Vars.out_text_file, self.book_name + ".txt"),
+                               text_content="\n\n\n" + TextFile.read(os.path.join(Vars.config_text, file_name)))
 
         print("out text file done! path:", os.path.join(Vars.out_text_file, self.book_name + ".txt"))
 

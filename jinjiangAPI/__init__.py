@@ -4,20 +4,21 @@ from pyDes import des, CBC, PAD_PKCS5
 from base64 import b64encode, b64decode
 from instance import *
 from jinjiangAPI import HttpUtil, UrlConstant
+from tenacity import *
 
 
-def get(url: str, params: dict = None, return_type: str = "json", app_url: bool = True):  # get request
-    if app_url:
-        api_url = UrlConstant.WEB_HOST + url.replace(UrlConstant.WEB_HOST, "")  # replace web host to api host
+@retry(stop=stop_after_attempt(7), wait=wait_fixed(0.1))
+def get(url: str, method: str = "GET", params: dict = None, return_type: str = "json", app_url: bool = True):
+    api_url = UrlConstant.WEB_HOST + url.replace(UrlConstant.WEB_HOST, "") if app_url else url
+    response = HttpUtil.request(url=api_url, method=method, params=params)
+    if return_type == "json":
+        return response.json()
+    elif return_type == "text":
+        return response.text
+    elif return_type == "content":
+        return response.content
     else:
-        api_url = url  # use api url
-    if api_url != "":
-        try:
-            return HttpUtil.get_api(url=api_url, params=params, return_type=return_type)
-        except Exception as err:  # if error, return None and print error
-            print("get_api error: " + str(err))
-    else:
-        print("get_api error: url is empty")
+        return response
 
 
 def decrypt(string: str, token: bool = False, key: str = "KK!%G3JdCHJxpAF3%Vg9pN"):  # decrypt string
