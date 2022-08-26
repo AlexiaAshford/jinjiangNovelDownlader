@@ -39,17 +39,18 @@ class Book:
 
         self.mkdir_content_file()  # create book content file.
         if not os.path.exists(os.path.join(Vars.config_text, self.book_id + ".jpg")):
-            png_file = src.get(
-                url=self.book_info.get("originalCover") if self.book_info.get("originalCover") else
-                self.book_info.get("novelCover"),
-                return_type="content", app_url=False
-            )  # download book cover if not exists in the config_text folder
-            open(os.path.join(Vars.config_text, self.book_id + ".jpg"), "wb").write(png_file)
+            pass
+            # png_file = src.request.get(
+            #     url=self.book_info.get("originalCover") if self.book_info.get("originalCover") else
+            #     self.book_info.get("novelCover"),
+            #     return_type="content", app_url=False
+            # )  # download book cover if not exists in the config_text folder
+            # open(os.path.join(Vars.config_text, self.book_id + ".jpg"), "wb").write(png_file)
         else:
             print("the cover is exists, skip it")  # if the cover exists, skip it
 
     def multi_thread_download_content(self):
-        response = src.Chapter.get_chapter_list(self.book_id)
+        response = src.app.Chapter.get_chapter_list(self.book_id)
         if response.get("message") is not None:  # if the book is not exist or the book is locked by jinjiang server
             return print(response.get("message"))
         if len(response['chapterlist']) == 0:  # if the book chapter list is empty
@@ -77,16 +78,16 @@ class Book:
                 print("you need login first to download vip chapter")
                 self.pool_sema.release()
                 return False
-            response = src.Chapter.chapter_vip_content(self.book_id, chapter_info.chapter_id)
+            response = src.app.Chapter.chapter_vip_content(self.book_id, chapter_info.chapter_id)
             if response.get("message") is None:
-                response['content'] = src.decrypt(response['content'], token=True)
+                response['content'] = src.decode.decrypt(response['content'], token=True)
                 self.download_successful_list.append(chapter_info)
             else:
                 self.pool_sema.release()
                 self.not_purchased_list.append(response)  # if the chapter is vip add to not_purchased_list
                 return False
         else:
-            response = src.Chapter.chapter_content(self.book_id, chapter_info.chapter_id)
+            response = src.app.Chapter.chapter_content(self.book_id, chapter_info.chapter_id)
 
         if isinstance(response, dict) and response.get("message") is None:
             content_info = catalogue.Content(response)

@@ -53,7 +53,7 @@ def shell_parser():
 
 def get_book_info(bookid: str):
     if bookid is not None:
-        Vars.current_book = src.Book.novel_basic_info(get_id(bookid))  # get book information by novel_id
+        Vars.current_book = src.app.Book.novel_basic_info(get_id(bookid))  # get book information by novel_id
         if Vars.current_book.get("message") is None:  # get book information success then print book information.
             Vars.current_book = book.Book(Vars.current_book)  # create book object from book information.
             Vars.current_book.start_download_book_and_get_detailed()  # start download book
@@ -71,7 +71,7 @@ def get_book_info(bookid: str):
 def search_book(search_name: str, next_page: int = 0):
     if search_name is None:
         return False
-    response = src.Book.search_info(keyword=search_name, page=next_page)
+    response = src.app.Book.search_info(keyword=search_name, page=next_page)
     if response.get("code") == '200':
         for index, book_info in enumerate(response["data"]):
             print("index:", index, "novelId:", book_info["novelId"], "novelName:", book_info["novelName"])
@@ -95,7 +95,7 @@ def search_book(search_name: str, next_page: int = 0):
 
 
 def login_account(username: str, password: str):
-    response = src.Account.login(username, password)
+    response = src.app.Account.login(username, password)
     if response.get("message") is None:
         print("login success", response["nickName"], "vip:", response["readergrade"])
         Vars.cfg.data['user_info'] = {
