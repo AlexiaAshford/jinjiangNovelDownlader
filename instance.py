@@ -40,7 +40,7 @@ class Config:
             print('保存配置文件时出错')
 
 
-class TextFile:
+class File:
     @staticmethod
     def write(text_path: str = "", text_content: str = "", mode: str = "a") -> [str, None]:
         try:
@@ -76,7 +76,7 @@ class Vars:
     #     'bookshelf \t\t\t\t <bookshelf index> \t switch bookshelf',
     #     'download \t\t\t\t <book id> \t download book',
     #     'update \t\t\t\t update config.json downloaded_book_id_list',
-    # ]
+
 
 
 def set_config():

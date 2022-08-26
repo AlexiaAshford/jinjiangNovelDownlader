@@ -91,7 +91,7 @@ class Book:
         if isinstance(response, dict) and response.get("message") is None:
             content_info = catalogue.Content(response)
             content_title = f"第 {chapter_index} 章: " + content_info.chapter_title
-            TextFile.write(
+            File.write(
                 text_path=os.path.join(Vars.config_text, chapter_info.chapter_id + ".txt"),
                 text_content=content_title + "\n" + content_info.content, mode="w"
             )
@@ -115,14 +115,14 @@ class Book:
     def out_put_text_file(self):
         config_text_file_name_list = os.listdir(Vars.config_text)
         config_text_file_name_list.sort(key=lambda x: int(x.split(".")[0]))  # sort by chapter index number
-        TextFile.write(
+        File.write(
             text_path=os.path.join(Vars.out_text_file, self.book_name + ".txt"),
             mode="w", text_content=self.book_detailed
         )  # write book info to file
         for file_name in config_text_file_name_list:
             if file_name.endswith(".txt"):
-                TextFile.write(text_path=os.path.join(Vars.out_text_file, self.book_name + ".txt"),
-                               text_content="\n\n\n" + TextFile.read(os.path.join(Vars.config_text, file_name)))
+                File.write(text_path=os.path.join(Vars.out_text_file, self.book_name + ".txt"),
+                           text_content="\n\n\n" + File.read(os.path.join(Vars.config_text, file_name)))
 
         print("out text file done! path:", os.path.join(Vars.out_text_file, self.book_name + ".txt"))
 

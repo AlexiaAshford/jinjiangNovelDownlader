@@ -1,24 +1,40 @@
 import random
-import time
+import requests
 from pyDes import des, CBC, PAD_PKCS5
 from base64 import b64encode, b64decode
 from instance import *
-from jinjiangAPI import HttpUtil, UrlConstant
+from jinjiangAPI import UrlConstant
 from tenacity import *
 
 
 @retry(stop=stop_after_attempt(7), wait=wait_fixed(0.1))
-def get(url: str, method: str = "GET", params: dict = None, return_type: str = "json", app_url: bool = True):
-    api_url = UrlConstant.WEB_HOST + url.replace(UrlConstant.WEB_HOST, "") if app_url else url
-    response = HttpUtil.request(url=api_url, method=method, params=params)
-    if return_type == "json":
-        return response.json()
-    elif return_type == "text":
-        return response.text
-    elif return_type == "content":
-        return response.content
+def get(
+        url: str,
+        method: str = "GET",
+        params: dict = None,
+        app_url: bool = True,
+        return_type: str = "json",
+) -> [dict, str, bytes]:
+    headers = {
+        "User-Agent": UrlConstant.USER_AGENT_HEADER,
+        "Referer": UrlConstant.REFERER_HEADER
+    }  # set headers for request
+
+    if app_url is True:
+        url = UrlConstant.WEB_HOST + url.replace(UrlConstant.WEB_HOST, "")  # add web host
+
+    if method == "GET":
+        response = requests.request(method=method, url=url, params=params, headers=headers)
     else:
-        return response
+        response = requests.request(url=url, method=method, data=params, headers=headers)
+
+    if return_type == "json" or return_type == "dict":
+        return response.json()
+    elif return_type == "text" or return_type == "str":
+        return response.text
+    elif return_type == "content" or return_type == "bytes":
+        return response.content
+    return response
 
 
 def decrypt(string: str, token: bool = False, key: str = "KK!%G3JdCHJxpAF3%Vg9pN"):  # decrypt string
@@ -32,7 +48,7 @@ def decrypt(string: str, token: bool = False, key: str = "KK!%G3JdCHJxpAF3%Vg9pN
 def des_encrypt(string: str, token: str = None, key: str = "KK!%G3JdCHJxpAF3%Vg9pN"):  # encrypt string
     des_cbc = des("00000000", CBC, "1ae2c94b", padmode=PAD_PKCS5)
     if token is not None:  # token is not empty add token to key
-        key = key + token
+        key += token
     des_cbc.setKey(key)  # set key
     return b64encode(des_cbc.encrypt(string)).decode("utf-8")  # encrypt and encode
 
@@ -51,14 +67,14 @@ class Account:  # account class for jinjiang NOVEL API
             "model": "Lenovo",
             "identifiers": identifiers
         }
-        return get(url="login", params=params)  # login and get token
+        return get(url=UrlConstant.LOGIN, params=params)  # login and get token
 
 
 class Book:  # book class for jinjiang NOVEL API
     @staticmethod
     def novel_basic_info(novel_id: str) -> dict:  # get book information by novel_id
         params: dict = {"novelId": novel_id}
-        return get(url="novelbasicinfo", params=params)
+        return get(url=UrlConstant.NOVEL_INFO, params=params)
 
     @staticmethod
     def search_info(keyword: str, search_id: int = 1, page: int = 0) -> [dict, None]:  # search book by keyword
@@ -79,14 +95,14 @@ class Book:  # book class for jinjiang NOVEL API
             else:
                 return print("token is empty you can't use this function")
 
-        return get(url="associativeSearch", params=params)
+        return get(url=UrlConstant.SEARCH_INFO, params=params)
 
 
 class Chapter:  # chapter class for jinjiang NOVEL API
     @staticmethod
     def get_chapter_list(novel_id: str, more: int = 0, whole: int = 1) -> dict:  # get chapter list by novel_id
         params: dict = {"novelId": novel_id, "more": more, "whole": whole}
-        return get(url="chapterList", params=params)
+        return get(url=UrlConstant.CHAPTER_LIST, params=params)
 
     @staticmethod
     def chapter_vip_content(novel_id: str, chapter_id: str) -> dict:
@@ -98,9 +114,9 @@ class Chapter:  # chapter class for jinjiang NOVEL API
             "updateTime": int(time.time()),
             "token": Vars.cfg.data.get("user_info").get("token")
         }
-        return get(url="chapterContent", params=params)
+        return get(url=UrlConstant.CONTENT, params=params)
 
     @staticmethod
     def chapter_content(novel_id: str, chapter_id: str) -> dict:
         params: dict = {"novelId": novel_id, "chapterId": chapter_id}
-        return get(url="chapterContent", params=params)
+        return get(url=UrlConstant.CONTENT, params=params)
