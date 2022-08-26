@@ -6,35 +6,24 @@ from instance import *
 from jinjiangAPI import UrlConstant
 from tenacity import *
 
+headers = {"User-Agent": UrlConstant.USER_AGENT_HEADER, "Referer": UrlConstant.REFERER_HEADER}
+
 
 @retry(stop=stop_after_attempt(7), wait=wait_fixed(0.1))
-def get(
-        url: str,
-        method: str = "GET",
-        params: dict = None,
-        app_url: bool = True,
-        return_type: str = "json",
-) -> [dict, str, bytes]:
-    headers = {
-        "User-Agent": UrlConstant.USER_AGENT_HEADER,
-        "Referer": UrlConstant.REFERER_HEADER
-    }  # set headers for request
-
-    if app_url is True:
-        url = UrlConstant.WEB_HOST + url.replace(UrlConstant.WEB_HOST, "")  # add web host
-
+def get(url: str, method: str = "GET", params: dict = None, re_type: str = "json") -> [dict, str, bytes]:
+    api_url = UrlConstant.WEB_HOST + url.replace(UrlConstant.WEB_HOST, "")  # add web host
     if method == "GET":
-        response = requests.request(method=method, url=url, params=params, headers=headers)
+        response = requests.request(method=method, url=api_url, params=params, headers=headers)
     else:
-        response = requests.request(url=url, method=method, data=params, headers=headers)
+        response = requests.request(url=api_url, method=method, data=params, headers=headers)
 
-    if return_type == "json" or return_type == "dict":
+    if re_type == "json" or re_type == "dict":
         return response.json()
-    elif return_type == "text" or return_type == "str":
+    elif re_type == "text" or re_type == "str":
         return response.text
-    elif return_type == "content" or return_type == "bytes":
+    elif re_type == "content" or re_type == "bytes":
         return response.content
-    return response
+    return response  # return request.response
 
 
 def decrypt(string: str, token: bool = False, key: str = "KK!%G3JdCHJxpAF3%Vg9pN"):  # decrypt string
