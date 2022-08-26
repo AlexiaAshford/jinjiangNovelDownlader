@@ -11,11 +11,14 @@ def shell_parser():
     parser.add_argument("-m", "--max", dest="threading_max", default=None, help="please input max threading")
     parser.add_argument("-up", "--update", dest="update", default=False, action="store_true", help="update books")
     parser.add_argument("-clear", "--clear_cache", dest="clear_cache", default=False, action="store_true")
-    parser.add_argument("-l", "--login", default=None, dest="account", help="login account")
+    parser.add_argument("-l", "--login", default=None, nargs="+", help="login account")
     args = parser.parse_args()
 
-    if args.account:
-        login_account(args.account)
+    if args.login:
+        if len(args.login) >= 2:
+            login_account(args.login[0], args.login[1])
+        else:
+            print("login failed, please input username and password")
 
     if args.update:
         if Vars.cfg.data['downloaded_book_id_list'] > 0:
@@ -91,13 +94,7 @@ def search_book(search_name: str, next_page: int = 0):
         print("search failed", response["message"])
 
 
-def login_account(account: str):
-    if account is None:
-        return False
-    if "----" in account:  # if account is a ----, then use default account and password
-        username, password = account.split("----")  # get username and password from account
-    else:
-        username, password = account.split(" ")
+def login_account(username: str, password: str):
     response = jinjiangAPI.Account.login(username, password)
     if response.get("message") is None:
         print("login success", response["nickName"], "vip:", response["readergrade"])
