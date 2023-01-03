@@ -48,10 +48,9 @@ class Book:
 
     def multi_thread_download_content(self):
         response = src.app.Chapter.get_chapter_list(self.book_info.novelId)
-        if response.get("message") is not None:  # if the book is not exist or the book is locked by jinjiang server
-            return print(response.get("message"))
-        if len(response['chapterlist']) == 0:  # if the book chapter list is empty
-            return print("the catalogue is empty")
+        if response.get("message") is not None or len(response['chapterlist']) == 0:
+            print("get chapter list failed, message:", response.get("message"))
+            return False
         self.sql.create_table("content_info", template.ContentInfo().dict().keys(), key="chapterid")
         for index, chapter in enumerate(response['chapterlist'], start=1):
             chap = template.ChapterInfo(**chapter)
@@ -71,20 +70,25 @@ class Book:
             self.pbar.close()
         return True  # all thread done and clear thread list and thread queue
 
+    def save_content(self, response: dict):
+
+        if isinstance(response, dict) and response.get("message") is None:
+            content_info = template.ContentInfo(**response)
+            self.sql.insert("content_info", content_info.dict())
+            self.download_successful_list.append(response)
+        else:
+            if isinstance(response, dict) and "购买章节" in response.get("message"):
+                print("download_content:", response.get("message"))
+
     def download_content(self, chapter_info: template.ChapterInfo):
         self.lock.acquire(True)
-        self.pbar.update(1)
         try:
             if chapter_info.isvip == 2 and chapter_info.originalPrice > 0:
                 if Vars.cfg.data.get("user_info").get("token") == "":
                     print("you need login first to download vip chapter")
                     return False
-
                 response = src.app.Chapter.chapter_vip_content(self.book_info.novelId, chapter_info.chapterid)
-                # print("vip chapter:", response)
-
                 if response.get("message") is None:
-                    # print(response)
                     response['content'] = src.decode.decrypt(response['content'], token=True)
                     self.download_successful_list.append(chapter_info)
                 else:
@@ -92,23 +96,9 @@ class Book:
                     return False
             else:
                 response = src.app.Chapter.chapter_content(self.book_info.novelId, chapter_info.chapterid)
-
-            if isinstance(response, dict) and response.get("message") is None:
-                content_info = template.ContentInfo(**response)
-
-                # content_title = f"第 {chapter_index} 章: " + content_info.chapterName
-                # File.write(
-                #     text_path=os.path.join(Vars.config_text, chapter_info.chapterid + ".txt"),
-                #     text_content=content_title + "\n" + content_info.content, mode="w"
-                # )
-                self.sql.insert("content_info", content_info.dict())
-
-
-            else:
-                if isinstance(response, dict) and "购买章节" in response.get("message"):
-                    print("download_content:", response.get("message"))
-            self.download_successful_list.append(response)
+            self.save_content(response)
         finally:
+            self.pbar.update(1)
             self.lock.release()
 
     def show_download_results(self):  # show the download results
