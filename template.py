@@ -1,9 +1,9 @@
-import pydantic
+# import pydantic
 import typing
 from pydantic import BaseModel, Field
 
 
-class BookInfo(pydantic.BaseModel):
+class BookInfo(BaseModel):
     novelId: typing.Optional[str] = None
     novelName: typing.Optional[str] = None
     authorId: typing.Optional[str] = None
@@ -61,7 +61,7 @@ class BookInfo(pydantic.BaseModel):
 #     author_name: typing.Optional[str] = Field(None, alias="authorName")
 #     novel_class: typing.Optional[str] = Field(None, alias="novelClass")
 
-class ChapterInfo(pydantic.BaseModel):
+class ChapterInfo(BaseModel):
     novelid: typing.Optional[str] = None
     chapterid: typing.Optional[str] = None
     chaptertype: typing.Optional[str] = None
@@ -89,3 +89,19 @@ class ChapterInfo(pydantic.BaseModel):
     ticketEndtime: typing.Optional[str] = None
     draft: typing.Optional[dict] = None
     manageExplain: typing.Optional[list] = None
+
+
+class ContentInfo(BaseModel):
+    chapterId: typing.Optional[str] = None
+    chapterName: typing.Optional[str] = None
+    chapterIntro: typing.Optional[str] = None
+    chapterSize: typing.Optional[str] = None
+    chapterDate: typing.Optional[str] = None
+    sayBody: typing.Optional[str] = None
+    upDown: typing.Optional[str] = None
+    update: typing.Optional[str] = None
+    content: typing.Optional[str] = None
+    isvip: typing.Optional[str] = None
+    authorid: typing.Optional[str] = None
+    autobuystatus: typing.Optional[str] = None
+    noteislock: typing.Optional[str] = None

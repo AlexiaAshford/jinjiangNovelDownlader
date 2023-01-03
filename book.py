@@ -1,27 +1,32 @@
 import src
-import catalogue
 from instance import *
 import threading
 from tqdm import tqdm
 from rich import print
+import tools_sqlite
 import template
 
 
 class Book:
     def __init__(self, book_info: dict):
-        self.book_info = template.BookInfo(**book_info)
         self.thread_list = []
-        self.speed_of_progress = 0
+        self.pbar = None
         self.book_detailed = ""
         self.not_purchased_list = []
         self.download_successful_list = []
-        self.pool_sema = threading.BoundedSemaphore(Vars.cfg.data['max_thread'])
+        self.book_info = template.BookInfo(**book_info)
+        self.sql = tools_sqlite.SqliteTools("jinjiang.cache.db")
+        # self.pool_sema = threading.BoundedSemaphore(Vars.cfg.data['max_thread'])
+        self.lock = threading.Lock()
 
     @property
     def descriptors(self) -> str:
         return self.book_info.novelIntro.replace("&lt;", "").replace("&gt;", "").replace("br/", "")
 
     def start_download_book_and_get_detailed(self):
+        self.sql.create_table("book_info", self.book_info.dict().keys(), key="novelId")
+        if self.sql.get("book_info", self.book_info.novelId, key="novelId") is None:
+            self.sql.insert("book_info", self.book_info.dict())
         self.book_detailed = "[info]书籍名称:{}".format(self.book_info.novelName)
         self.book_detailed += "\n[info]书籍作者:{}".format(self.book_info.authorName)
         self.book_detailed += "\n[info]书籍分类:{}".format(self.book_info.novelClass)
@@ -47,56 +52,64 @@ class Book:
             return print(response.get("message"))
         if len(response['chapterlist']) == 0:  # if the book chapter list is empty
             return print("the catalogue is empty")
+        self.sql.create_table("content_info", template.ContentInfo().dict().keys(), key="chapterid")
         for index, chapter in enumerate(response['chapterlist'], start=1):
-            # print(chapter)
-            chap = catalogue.Chapter(chapter_info=chapter, index=index)
-            if os.path.exists(os.path.join(Vars.config_text, chap.chapter_id + ".txt")):  # if the file exists, skip it
-                continue  # skip the chapter if the file exists
-            self.thread_list.append(
-                threading.Thread(target=self.download_content, args=(index, chap,))
-            )  # add to queue and download in thread
-
-        for thread in self.thread_list:  # start thread one by one and wait for all thread done
-            thread.start()
-        for thread in self.thread_list:  # wait for all thread to finish and join
-            thread.join()
-        self.thread_list.clear()  # clear thread list and thread queue
+            chap = template.ChapterInfo(**chapter)
+            content_info_cache = self.sql.get("content_info", str(chap.chapterid), key="chapterid")
+            if content_info_cache:
+                print(content_info_cache['chapterName'], "is exists, skip it")
+            else:
+                if chap.originalPrice == 0:
+                    self.thread_list.append(threading.Thread(target=self.download_content, args=(chap,)))
+        if len(self.thread_list) > 0:
+            self.pbar = tqdm(total=len(self.thread_list), desc="download content", ncols=100)
+            for thread in self.thread_list:  # start thread one by one and wait for all thread done
+                thread.start()
+            for thread in self.thread_list:  # wait for all thread to finish and join
+                thread.join()
+            self.thread_list.clear()  # clear thread list and thread queue
+            self.pbar.close()
         return True  # all thread done and clear thread list and thread queue
 
-    def download_content(self, chapter_index: int, chapter_info: catalogue.Chapter):
-        self.pool_sema.acquire()
-        self.speed_of_progress += 1
-        if chapter_info.is_vip == 2 and chapter_info.original_price > 0:
-            if Vars.cfg.data.get("user_info").get("token") == "":
-                print("you need login first to download vip chapter")
-                self.pool_sema.release()
-                return False
-            response = src.app.Chapter.chapter_vip_content(self.book_info.novelId, chapter_info.chapter_id)
-            if response.get("message") is None:
-                response['content'] = src.decode.decrypt(response['content'], token=True)
-                self.download_successful_list.append(chapter_info)
-            else:
-                self.pool_sema.release()
-                self.not_purchased_list.append(response)  # if the chapter is vip add to not_purchased_list
-                return False
-        else:
-            response = src.app.Chapter.chapter_content(self.book_info.novelId, chapter_info.chapter_id)
+    def download_content(self, chapter_info: template.ChapterInfo):
+        self.lock.acquire(True)
+        self.pbar.update(1)
+        try:
+            if chapter_info.isvip == 2 and chapter_info.originalPrice > 0:
+                if Vars.cfg.data.get("user_info").get("token") == "":
+                    print("you need login first to download vip chapter")
+                    return False
 
-        if isinstance(response, dict) and response.get("message") is None:
-            content_info = catalogue.Content(response)
-            content_title = f"第 {chapter_index} 章: " + content_info.chapter_title
-            File.write(
-                text_path=os.path.join(Vars.config_text, chapter_info.chapter_id + ".txt"),
-                text_content=content_title + "\n" + content_info.content, mode="w"
-            )
-            print(
-                "{}: {}/{}".format(self.book_info.novelName, self.speed_of_progress, self.book_info.novelChapterCount),
-                end="\r")
-        else:
-            if isinstance(response, dict) and "购买章节" in response.get("message"):
-                print("download_content:", response.get("message"))
-        self.download_successful_list.append(response)
-        self.pool_sema.release()
+                response = src.app.Chapter.chapter_vip_content(self.book_info.novelId, chapter_info.chapterid)
+                # print("vip chapter:", response)
+
+                if response.get("message") is None:
+                    # print(response)
+                    response['content'] = src.decode.decrypt(response['content'], token=True)
+                    self.download_successful_list.append(chapter_info)
+                else:
+                    self.not_purchased_list.append(response)  # if the chapter is vip add to not_purchased_list
+                    return False
+            else:
+                response = src.app.Chapter.chapter_content(self.book_info.novelId, chapter_info.chapterid)
+
+            if isinstance(response, dict) and response.get("message") is None:
+                content_info = template.ContentInfo(**response)
+
+                # content_title = f"第 {chapter_index} 章: " + content_info.chapterName
+                # File.write(
+                #     text_path=os.path.join(Vars.config_text, chapter_info.chapterid + ".txt"),
+                #     text_content=content_title + "\n" + content_info.content, mode="w"
+                # )
+                self.sql.insert("content_info", content_info.dict())
+
+
+            else:
+                if isinstance(response, dict) and "购买章节" in response.get("message"):
+                    print("download_content:", response.get("message"))
+            self.download_successful_list.append(response)
+        finally:
+            self.lock.release()
 
     def show_download_results(self):  # show the download results
         print("successful download chapter:", len(self.download_successful_list))
@@ -109,17 +122,19 @@ class Book:
             )
 
     def out_put_text_file(self):
-        config_text_file_name_list = os.listdir(Vars.config_text)
-        config_text_file_name_list.sort(key=lambda x: int(x.split(".")[0]))  # sort by chapter index number
+        content_info_cache = self.sql.get_all("content_info")
+        content_info_cache.sort(key=lambda x: int(x['chapterId']))
+
         File.write(
             text_path=os.path.join(Vars.out_text_file, self.book_info.novelName + ".txt"),
             mode="w", text_content=self.book_detailed
         )  # write book info to file
-        for file_name in config_text_file_name_list:
-            if file_name.endswith(".txt"):
-                File.write(text_path=os.path.join(Vars.out_text_file, self.book_info.novelName + ".txt"),
-                           text_content="\n\n\n" + File.read(os.path.join(Vars.config_text, file_name)))
-
+        for content_info in content_info_cache:
+            content_title = f"第 {content_info['chapterId']} 章: " + content_info['chapterName']
+            File.write(
+                text_path=os.path.join(Vars.out_text_file, self.book_info.novelName + ".txt"),
+                text_content="\n\n\n" + content_title + "\n" + content_info['content'], mode="a"
+            )
         print("out text file done! path:", os.path.join(Vars.out_text_file, self.book_info.novelName + ".txt"))
 
     def mkdir_content_file(self):
