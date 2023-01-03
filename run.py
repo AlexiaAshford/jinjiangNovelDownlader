@@ -2,6 +2,7 @@ import argparse
 import src
 from instance import *
 import book
+import template
 
 
 def shell_parser():
@@ -52,19 +53,19 @@ def shell_parser():
 
 
 def get_book_info(bookid: str):
-    Vars.current_book = src.app.Book.novel_basic_info(get_id(bookid))  # get book information by novel_id
-    if Vars.current_book.get("message") is None:  # get book information success then print book information.
-        Vars.current_book = book.Book(Vars.current_book)  # create book object from book information.
-        Vars.current_book.start_download_book_and_get_detailed()  # start download book
-        print(Vars.current_book.book_detailed)  # print book information with book detail.
-        if Vars.current_book.multi_thread_download_content():  # download book content with multi thread.
-            Vars.current_book.show_download_results()  # show download results after download.
-            Vars.current_book.out_put_text_file()  # output book content to text file.
-            Vars.current_book.set_downloaded_book_id_in_list()  # set book id in downloaded book list.
+    current_book = src.app.Book.novel_basic_info(get_id(bookid))
+    if current_book.get("message") is None:  # get book information success then print book information.
+        current_book = book.Book(template.BookInfo(**current_book))  # create book object from book information.
+        current_book.start_download_book_and_get_detailed()  # start download book
+        print(current_book.book_detailed)  # print book information with book detail.
+        if current_book.multi_thread_download_content():  # download book content with multi thread.
+            current_book.show_download_results()  # show download results after download.
+            current_book.out_put_text_file()  # output book content to text file.
+            current_book.set_downloaded_book_id_in_list()  # set book id in downloaded book list.
         else:
             print(f"download bookid:{bookid} failed, please try again.")
     else:
-        print(Vars.current_book["message"])  # print book information error.
+        print(current_book["message"])  # print book information error.
 
 
 def search_book(search_name: str, next_page: int = 0):

@@ -8,13 +8,13 @@ import template
 
 
 class Book:
-    def __init__(self, book_info: dict):
+    def __init__(self, book_info: template.BookInfo):
         self.thread_list = []
         self.pbar = None
         self.book_detailed = ""
         self.not_purchased_list = []
         self.download_successful_list = []
-        self.book_info = template.BookInfo(**book_info)
+        self.book_info = book_info
         self.sql = tools_sqlite.SqliteTools("jinjiang.cache.db")
         # self.pool_sema = threading.BoundedSemaphore(Vars.cfg.data['max_thread'])
         self.lock = threading.Lock()
