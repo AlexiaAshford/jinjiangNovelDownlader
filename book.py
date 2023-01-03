@@ -2,60 +2,53 @@ import src
 import catalogue
 from instance import *
 import threading
+from tqdm import tqdm
+from rich import print
+import template
 
 
 class Book:
     def __init__(self, book_info: dict):
-        self.book_info = book_info
+        self.book_info = template.BookInfo(**book_info)
         self.thread_list = []
         self.speed_of_progress = 0
         self.book_detailed = ""
         self.not_purchased_list = []
         self.download_successful_list = []
-        self.book_id = book_info["novelId"]
-        self.book_name = book_info["novelName"]
-        self.book_author = book_info["authorName"]
-        self.book_class = book_info["novelClass"]
-        self.book_tags = book_info["novelTags"]
-        self.book_is_lock = book_info["islock"]
-        self.book_is_vip = book_info["isVip"]
-        self.book_is_package = book_info["isPackage"]
-        self.book_is_sign = book_info["isSign"]
-        self.protagonist = book_info["protagonist"]
-        self.vip_chapterid = book_info["vipChapterid"]
-        self.book_intro = book_info["novelIntroShort"]
-        self.book_review_score = book_info["novelReviewScore"]
-        self.book_author_say_rule = book_info["authorsayrule"]
-        self.book_chapter_count = book_info["novelChapterCount"]
         self.pool_sema = threading.BoundedSemaphore(Vars.cfg.data['max_thread'])
 
+    @property
+    def descriptors(self) -> str:
+        return self.book_info.novelIntro.replace("&lt;", "").replace("&gt;", "").replace("br/", "")
+
     def start_download_book_and_get_detailed(self):
-        self.book_detailed = "[info]书籍名称:{}".format(self.book_name)
-        self.book_detailed += "\n[info]书籍作者:{}".format(self.book_author)
-        self.book_detailed += "\n[info]书籍分类:{}".format(self.book_class)
-        self.book_detailed += "\n[info]书籍标签:{}".format(self.book_tags)
-        self.book_detailed += "\n[info]章节总数:{}".format(self.book_chapter_count)
-        self.book_detailed += "\n[info]书籍简介:{}".format(self.book_intro)
+        self.book_detailed = "[info]书籍名称:{}".format(self.book_info.novelName)
+        self.book_detailed += "\n[info]书籍作者:{}".format(self.book_info.authorName)
+        self.book_detailed += "\n[info]书籍分类:{}".format(self.book_info.novelClass)
+        self.book_detailed += "\n[info]书籍标签:{}".format(self.book_info.novelTags)
+        self.book_detailed += "\n[info]章节总数:{}".format(self.book_info.novelChapterCount)
+        # self.book_detailed += "\n[info]书籍简介:{}".format(self.descriptors)
 
         self.mkdir_content_file()  # create book content file.
-        if not os.path.exists(os.path.join(Vars.config_text, self.book_id + ".jpg")):
+        if not os.path.exists(os.path.join(Vars.config_text, self.book_info.novelId + ".jpg")):
             pass
             # png_file = src.request.get(
             #     url=self.book_info.get("originalCover") if self.book_info.get("originalCover") else
             #     self.book_info.get("novelCover"),
             #     return_type="content", app_url=False
             # )  # download book cover if not exists in the config_text folder
-            # open(os.path.join(Vars.config_text, self.book_id + ".jpg"), "wb").write(png_file)
+            # open(os.path.join(Vars.config_text, self.book_info.novelId + ".jpg"), "wb").write(png_file)
         else:
             print("the cover is exists, skip it")  # if the cover exists, skip it
 
     def multi_thread_download_content(self):
-        response = src.app.Chapter.get_chapter_list(self.book_id)
+        response = src.app.Chapter.get_chapter_list(self.book_info.novelId)
         if response.get("message") is not None:  # if the book is not exist or the book is locked by jinjiang server
             return print(response.get("message"))
         if len(response['chapterlist']) == 0:  # if the book chapter list is empty
             return print("the catalogue is empty")
         for index, chapter in enumerate(response['chapterlist'], start=1):
+            # print(chapter)
             chap = catalogue.Chapter(chapter_info=chapter, index=index)
             if os.path.exists(os.path.join(Vars.config_text, chap.chapter_id + ".txt")):  # if the file exists, skip it
                 continue  # skip the chapter if the file exists
@@ -78,7 +71,7 @@ class Book:
                 print("you need login first to download vip chapter")
                 self.pool_sema.release()
                 return False
-            response = src.app.Chapter.chapter_vip_content(self.book_id, chapter_info.chapter_id)
+            response = src.app.Chapter.chapter_vip_content(self.book_info.novelId, chapter_info.chapter_id)
             if response.get("message") is None:
                 response['content'] = src.decode.decrypt(response['content'], token=True)
                 self.download_successful_list.append(chapter_info)
@@ -87,7 +80,7 @@ class Book:
                 self.not_purchased_list.append(response)  # if the chapter is vip add to not_purchased_list
                 return False
         else:
-            response = src.app.Chapter.chapter_content(self.book_id, chapter_info.chapter_id)
+            response = src.app.Chapter.chapter_content(self.book_info.novelId, chapter_info.chapter_id)
 
         if isinstance(response, dict) and response.get("message") is None:
             content_info = catalogue.Content(response)
@@ -96,7 +89,9 @@ class Book:
                 text_path=os.path.join(Vars.config_text, chapter_info.chapter_id + ".txt"),
                 text_content=content_title + "\n" + content_info.content, mode="w"
             )
-            print("{}: {}/{}".format(self.book_name, self.speed_of_progress, self.book_chapter_count), end="\r")
+            print(
+                "{}: {}/{}".format(self.book_info.novelName, self.speed_of_progress, self.book_info.novelChapterCount),
+                end="\r")
         else:
             if isinstance(response, dict) and "购买章节" in response.get("message"):
                 print("download_content:", response.get("message"))
@@ -117,19 +112,19 @@ class Book:
         config_text_file_name_list = os.listdir(Vars.config_text)
         config_text_file_name_list.sort(key=lambda x: int(x.split(".")[0]))  # sort by chapter index number
         File.write(
-            text_path=os.path.join(Vars.out_text_file, self.book_name + ".txt"),
+            text_path=os.path.join(Vars.out_text_file, self.book_info.novelName + ".txt"),
             mode="w", text_content=self.book_detailed
         )  # write book info to file
         for file_name in config_text_file_name_list:
             if file_name.endswith(".txt"):
-                File.write(text_path=os.path.join(Vars.out_text_file, self.book_name + ".txt"),
+                File.write(text_path=os.path.join(Vars.out_text_file, self.book_info.novelName + ".txt"),
                            text_content="\n\n\n" + File.read(os.path.join(Vars.config_text, file_name)))
 
-        print("out text file done! path:", os.path.join(Vars.out_text_file, self.book_name + ".txt"))
+        print("out text file done! path:", os.path.join(Vars.out_text_file, self.book_info.novelName + ".txt"))
 
     def mkdir_content_file(self):
-        Vars.config_text = os.path.join(Vars.cfg.data['config_path'], self.book_name)
-        Vars.out_text_file = os.path.join(Vars.cfg.data['out_path'], self.book_name)
+        Vars.config_text = os.path.join(Vars.cfg.data['config_path'], self.book_info.novelName)
+        Vars.out_text_file = os.path.join(Vars.cfg.data['out_path'], self.book_info.novelName)
         if not os.path.exists(Vars.config_text):
             os.makedirs(Vars.config_text)
         if not os.path.exists(Vars.out_text_file):
@@ -137,9 +132,9 @@ class Book:
 
     def set_downloaded_book_id_in_list(self):
         if isinstance(Vars.cfg.data['downloaded_book_id_list'], list):
-            if self.book_id not in Vars.cfg.data['downloaded_book_id_list']:
-                Vars.cfg.data['downloaded_book_id_list'].append(self.book_id)
+            if self.book_info.novelId not in Vars.cfg.data['downloaded_book_id_list']:
+                Vars.cfg.data['downloaded_book_id_list'].append(self.book_info.novelId)
                 Vars.cfg.save()
             return True
-        Vars.cfg.data['downloaded_book_id_list'] = [self.book_id]
+        Vars.cfg.data['downloaded_book_id_list'] = [self.book_info.novelId]
         Vars.cfg.save()
