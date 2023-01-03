@@ -24,8 +24,7 @@ class Account:  # account class for jinjiang NOVEL API
 class Book:  # book class for jinjiang NOVEL API
     @staticmethod
     def novel_basic_info(novel_id: str) -> dict:  # get book information by novel_id
-        params: dict = {"novelId": novel_id}
-        return request.get(url=UrlConstant.NOVEL_INFO, params=params)
+        return request.get(url=UrlConstant.NOVEL_INFO, params={"novelId": novel_id})
 
     @staticmethod
     def search_info(keyword: str, search_id: int = 1, page: int = 0) -> [dict, None]:  # search book by keyword
