@@ -1,8 +1,12 @@
-import argparse
+import time
 import src
-from instance import *
 import book
+import argparse
 import template
+from instance import *
+from lib import get_url_id
+
+from concurrent.futures import ThreadPoolExecutor
 
 
 def shell_parser():
@@ -11,8 +15,8 @@ def shell_parser():
     parser.add_argument("-s", "--search", dest="search", nargs=1, default=None, help="search book by book name")
     parser.add_argument("-m", "--max", dest="threading_max", default=None, help="please input max threading")
     parser.add_argument("-up", "--update", dest="update", default=False, action="store_true", help="update books")
-    parser.add_argument("-clear", "--clear_cache", dest="clear_cache", default=False, action="store_true")
     parser.add_argument("-l", "--login", default=None, nargs="+", help="login account")
+
     args = parser.parse_args()
 
     if args.login:
@@ -24,10 +28,7 @@ def shell_parser():
     if args.update:
         if Vars.cfg.data['downloaded_book_id_list'] > 0:
             for book_id in Vars.cfg.data['downloaded_book_id_list']:
-                if str(book_id).isdigit():
-                    get_book_info(book_id)
-                else:
-                    print("book_id is not digit:", book_id)
+                get_book_info(book_id)
         else:
             print("no book downloaded, please download book first.")
 
@@ -44,28 +45,60 @@ def shell_parser():
         else:
             print("threading_max is not digit:", args.max)
 
-    if args.clear_cache:
-        Vars.cfg.data.clear()
-        Vars.cfg.save()
-
     if args.downloadbook:
         get_book_info(args.downloadbook[0])
 
 
+@get_url_id()
 def get_book_info(bookid: str):
-    current_book = src.app.Book.novel_basic_info(get_id(bookid))
-    if current_book.get("message") is None:  # get book information success then print book information.
-        current_book = book.Book(template.BookInfo(**current_book))  # create book object from book information.
+    book_info = src.Book.novel_basic_info(bookid)
+    if book_info is not None:
+        current_book = book.Book(book_info)  # create book object from book information.
         current_book.start_download_book_and_get_detailed()  # start download book
-        print(current_book.book_detailed)  # print book information with book detail.
-        if current_book.multi_thread_download_content():  # download book content with multi thread.
-            current_book.show_download_results()  # show download results after download.
-            current_book.out_put_text_file()  # output book content to text file.
-            current_book.set_downloaded_book_id_in_list()  # set book id in downloaded book list.
+        print(current_book.book_detailed)
+        with ThreadPoolExecutor(max_workers=32) as executor:
+            for chapter in src.Book.get_chapter_list(book_info.novelId):  # type: template.ChapterInfo
+                if chapter.isvip == 0:
+                    executor.submit(current_book.download_no_vip_content, chapter)
+                else:
+                    # vip chapter isvip is 2
+                    executor.submit(current_book.download_vip_content, chapter)
+        time.sleep(3)  # wait for all thread finish.
+        set_file_name_list = []
+        for file_name in os.listdir("cache"):
+            if file_name.find(book_info.novelId) != -1:
+                set_file_name_list.append(file_name)
+
+        set_file_name_list.sort(key=lambda x: int(x.split("-")[1]))
+        # epub_book.set_epub_cache_file()
+        for index, file_name in enumerate(set_file_name_list):
+            with open(f"cache/{file_name}", "r", encoding="utf-8") as f:
+                with open(f"downloads/{book_info.novelName}/{book_info.novelName}.txt", "a", encoding="utf-8") as f2:
+                    content = f.read()
+                    # chapter_title = content.split("\n")[0]
+                    f2.write(f"\n\n\n第{index}章 " + content)
+
+        if os.name == 'nt':
+            os.system(f"epub_windows_x64.exe "
+                      f"-file downloads/{book_info.novelName}/{book_info.novelName}.txt "
+                      f"-o downloads/{book_info.novelName} "
+                      f"-cover {book_info.novelCover}")
         else:
-            print(f"download bookid:{bookid} failed, please try again.")
-    else:
-        print(current_book["message"])  # print book information error.
+            os.system(f"./epub_linux_x64 "
+                      f"-file downloads/{book_info.novelName}/{book_info.novelName}.txt "
+                      f"-o downloads/{book_info.novelName} "
+                      f"-cover {book_info.novelCover}")
+        # epub_book.epub_file_export()
+        # current_book.show_download_results()  # show download results after download.
+        # current_book.out_put_text_file()  # output book content to text file.
+        # current_book.set_downloaded_book_id_in_list()  # set book id in downloaded book list.
+        #
+        # if current_book.multi_thread_download_content():  # download book content with multi thread.
+        #     current_book.show_download_results()  # show download results after download.
+        #     current_book.out_put_text_file()  # output book content to text file.
+        #     current_book.set_downloaded_book_id_in_list()  # set book id in downloaded book list.
+        # else:
+        #     print(f"download bookid:{bookid} failed, please try again.")
 
 
 def search_book(search_name: str, next_page: int = 0):

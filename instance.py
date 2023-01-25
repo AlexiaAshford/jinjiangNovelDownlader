@@ -68,16 +68,6 @@ class Vars:
     out_text_file = None
     config_text = None
 
-    # help_info = [
-    #     'book text file and config file in ./Hbooker/',
-    #     'quit \t\t\t\t exit program',
-    #     'login \t\t\t\t <login_token> <account> \t login hbooker with account',
-    #     'bookshelf \t\t\t\t read bookshelf',
-    #     'bookshelf \t\t\t\t <bookshelf index> \t switch bookshelf',
-    #     'download \t\t\t\t <book id> \t download book',
-    #     'update \t\t\t\t update config.json downloaded_book_id_list',
-
-
 
 def set_config():
     Vars.cfg.load()

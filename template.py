@@ -89,6 +89,7 @@ class ChapterInfo(BaseModel):
     ticketEndtime: typing.Optional[str] = None
     draft: typing.Optional[dict] = None
     manageExplain: typing.Optional[list] = None
+    cache_file_path: typing.Optional[str] = None
 
 
 class ContentInfo(BaseModel):
