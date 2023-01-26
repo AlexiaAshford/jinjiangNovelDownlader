@@ -74,6 +74,7 @@ def shell_get_book_info(bookid: str):
 
 def download_chapter(book_info):
     current_book_obj = book.Book(book_info)  # create book object from book information.
+    current_book_obj.set_downloaded_book_id_in_list()  # add book id to downloaded book id list.
     print(current_book_obj.book_detailed)
     with ThreadPoolExecutor(max_workers=32) as executor:
         for chapter in src.Book.get_chapter_list(book_info.novelId):  # type: template.ChapterInfo
