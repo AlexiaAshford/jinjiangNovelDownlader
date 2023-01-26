@@ -1,7 +1,6 @@
 import src
 from instance import *
 import threading
-from tqdm import tqdm
 from rich import print
 import template
 
@@ -81,8 +80,8 @@ class Book:
     def mkdir_content_file(self):
         Vars.out_text_file = os.path.join(Vars.cfg.data['out_path'], self.book_info.novelName)
 
-        if not os.path.exists("cache"):
-            os.makedirs("cache")
+        if not os.path.exists(Vars.current_command.cache):
+            os.makedirs(Vars.current_command.cache)
         if not os.path.exists(Vars.out_text_file):
             os.makedirs(Vars.out_text_file)
 

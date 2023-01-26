@@ -33,7 +33,7 @@ def get_chapter_list(response):  # get chapter list by novel_id
     for chapter in tqdm(response['chapterlist'], ncols=100):
         chap_info = template.ChapterInfo(**chapter)
         chap_info.chaptername = re.sub(r'[\\/:*?"<>|]', '', chap_info.chaptername)
-        chap_info.cache_file_path = os.path.join("cache",
+        chap_info.cache_file_path = os.path.join(Vars.current_command.cache,
                                                  chap_info.novelid + "-" +
                                                  chap_info.chapterid + "-" +
                                                  chap_info.chaptername + ".txt"

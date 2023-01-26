@@ -63,10 +63,10 @@ class File:
 class Vars:
     cfg = Config(os.getcwd() + '/config.json', os.getcwd())
     current_bookshelf = []
+    current_command = None
     current_book = None
     current_epub = None
     out_text_file = None
-    config_text = None
 
 
 def set_config():
@@ -80,9 +80,6 @@ def set_config():
         save_config = True
     if Vars.cfg.data.get("downloaded_book_id_list") is None:
         Vars.cfg.data['downloaded_book_id_list'] = []
-        save_config = True
-    if Vars.cfg.data.get("out_path") is None or Vars.cfg.data.get("out_path") == "":
-        Vars.cfg.data['out_path'] = "downloads"
         save_config = True
     if Vars.cfg.data.get("config_path") is None or Vars.cfg.data.get("config_path") == "":
         Vars.cfg.data['config_path'] = "configs"
