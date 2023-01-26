@@ -9,7 +9,6 @@ class Book:
     def __init__(self, book_info: template.BookInfo):
         self.thread_list = []
         self.pbar = None
-        self.book_detailed = ""
         self.not_purchased_list = []
         self.download_successful_list = []
         self.book_info = book_info
@@ -20,25 +19,15 @@ class Book:
     def descriptors(self) -> str:
         return self.book_info.novelIntro.replace("&lt;", "").replace("&gt;", "").replace("br/", "")
 
-    def start_download_book_and_get_detailed(self):
-        self.book_detailed = "[info]书籍名称:{}".format(self.book_info.novelName)
-        self.book_detailed += "\n[info]书籍作者:{}".format(self.book_info.authorName)
-        self.book_detailed += "\n[info]书籍分类:{}".format(self.book_info.novelClass)
-        self.book_detailed += "\n[info]书籍标签:{}".format(self.book_info.novelTags)
-        self.book_detailed += "\n[info]章节总数:{}".format(self.book_info.novelChapterCount)
-        # self.book_detailed += "\n[info]书籍简介:{}".format(self.descriptors)
-
-        self.mkdir_content_file()  # create book content file.
-        # if not os.path.exists(os.path.join(Vars.config_text, self.book_info.novelId + ".jpg")):
-        #     pass
-        # png_file = src.request.get(
-        #     url=self.book_info.get("originalCover") if self.book_info.get("originalCover") else
-        #     self.book_info.get("novelCover"),
-        #     return_type="content", app_url=False
-        # )  # download book cover if not exists in the config_text folder
-        # open(os.path.join(Vars.config_text, self.book_info.novelId + ".jpg"), "wb").write(png_file)
-        # else:
-        #     print("the cover is exists, skip it")  # if the cover exists, skip it
+    @property
+    def book_detailed(self):
+        book_detailed = "[info]书籍名称:{}".format(self.book_info.novelName)
+        book_detailed += "\n[info]书籍作者:{}".format(self.book_info.authorName)
+        book_detailed += "\n[info]书籍分类:{}".format(self.book_info.novelClass)
+        book_detailed += "\n[info]书籍标签:{}".format(self.book_info.novelTags)
+        book_detailed += "\n[info]章节总数:{}".format(self.book_info.novelChapterCount)
+        book_detailed += "\n[info]书籍简介:{}".format(self.descriptors)
+        return book_detailed
 
     def download_no_vip_content(self, chapter_info: template.ChapterInfo):
         response = src.app.Chapter.chapter_content(self.book_info.novelId, chapter_info.chapterid)
@@ -76,14 +65,6 @@ class Book:
     #             "\t原价:", chapter_info.get("originalPrice"),
     #             "\t章节名称:", chapter_info.get("chapterName")
     #         )
-
-    def mkdir_content_file(self):
-        Vars.out_text_file = os.path.join(Vars.cfg.data['out_path'], self.book_info.novelName)
-
-        if not os.path.exists(Vars.current_command.cache):
-            os.makedirs(Vars.current_command.cache)
-        if not os.path.exists(Vars.out_text_file):
-            os.makedirs(Vars.out_text_file)
 
     def set_downloaded_book_id_in_list(self):
         if isinstance(Vars.cfg.data['downloaded_book_id_list'], list):

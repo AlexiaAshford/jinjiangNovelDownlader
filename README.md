@@ -11,15 +11,20 @@
 
 ## 命令行参数
 ```
+usage: run.py [-h] [-d DOWNLOAD] [-s SEARCH] [-m THREADING_MAX] [--update] [--login LOGIN [LOGIN ...]] [--epub] [--output [OUTPUT]] [--cache [CACHE]]
+
 optional arguments:
   -h, --help            show this help message and exit
-  -d DOWNLOADBOOK, --id DOWNLOADBOOK
+  -d DOWNLOAD, --download DOWNLOAD
                         please input book_id
   -s SEARCH, --search SEARCH
                         search book by book name
   -m THREADING_MAX, --max THREADING_MAX
                         please input max threading
-  -up, --update         update books
-  -clear, --clear_cache
-  -l LOGIN [LOGIN ...], --login LOGIN [LOGIN ...]  login account and password
+  --update              update books
+  --login LOGIN [LOGIN ...]
+                        login account
+  --epub                output epub file
+  --output [OUTPUT]     output epub file
+  --cache [CACHE]       output epub file
 ```

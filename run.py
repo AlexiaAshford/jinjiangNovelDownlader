@@ -14,7 +14,7 @@ def shell_parser():
     parser.add_argument("-d", "--download", nargs=1, default=None, help="please input book_id")
     parser.add_argument("-s", "--search", dest="search", nargs=1, default=None, help="search book by book name")
     parser.add_argument("-m", "--max", dest="threading_max", default=None, help="please input max threading")
-    parser.add_argument("-up", "--update", default=False, action="store_true", help="update books")
+    parser.add_argument("--update", default=False, action="store_true", help="update books")
     parser.add_argument("--login", default=None, nargs="+", help="login account")
     parser.add_argument("--epub", default=True, action="store_true", help="output epub file")
     parser.add_argument("--output", default="downloads", nargs="?", help="output epub file")
@@ -30,7 +30,7 @@ def shell_parser():
     if Vars.current_command.update:
         if Vars.cfg.data['downloaded_book_id_list'] > 0:
             for book_id in Vars.cfg.data['downloaded_book_id_list']:
-                get_book_info(book_id)
+                shell_get_book_info(book_id)
         else:
             print("no book downloaded, please download book first.")
 
@@ -48,34 +48,45 @@ def shell_parser():
             print("threading_max is not digit:", Vars.current_command.max)
 
     if Vars.current_command.download:
-        shell_download_book(Vars.current_command.download[0])
+        shell_get_book_info(Vars.current_command.download[0])
 
 
 @get_url_id()
-def shell_download_book(bookid: str):
-    try:
-        Vars.current_book = src.Book.novel_basic_info(bookid)
-        if Vars.current_book is not None:
-            file_name_list = get_book_info(Vars.current_book)
-            output_text_and_epub_file(Vars.current_book, file_name_list)
-        else:
-            print("bookid is not exist:", bookid)
-    except Exception as e:
-        print("download book error:", e)
+def shell_get_book_info(bookid: str):
+    Vars.current_book = src.Book.novel_basic_info(bookid)
+    if Vars.current_book is None:
+        return print("bookid is not exist:", bookid)
+
+    if not os.path.exists(f"{Vars.current_command.output}/{Vars.current_book.novelName}"):
+        os.makedirs(f"{Vars.current_command.output}/{Vars.current_book.novelName}")
+    if not os.path.exists(Vars.current_command.cache):
+        os.makedirs(Vars.current_command.cache)
+
+    current_book_obj = download_chapter(Vars.current_book)
+
+    # clear output file information and write new description.
+    with open(f"{Vars.current_command.output}/{Vars.current_book.novelName}/{Vars.current_book.novelName}.txt", "w",
+              encoding="utf-8") as f:
+        f.write(f"{current_book_obj.book_detailed}\n\n\n")
+
+    output_text_and_epub_file(Vars.current_book, get_cache_file_name(Vars.current_book))
 
 
-def get_book_info(book_info):
-    current_book = book.Book(book_info)  # create book object from book information.
-    current_book.start_download_book_and_get_detailed()  # start download book
-    print(current_book.book_detailed)
+def download_chapter(book_info):
+    current_book_obj = book.Book(book_info)  # create book object from book information.
+    print(current_book_obj.book_detailed)
     with ThreadPoolExecutor(max_workers=32) as executor:
         for chapter in src.Book.get_chapter_list(book_info.novelId):  # type: template.ChapterInfo
             if chapter.isvip == 0:
-                executor.submit(current_book.download_no_vip_content, chapter)
+                executor.submit(current_book_obj.download_no_vip_content, chapter)
             else:
                 # vip chapter isvip is 2
-                executor.submit(current_book.download_vip_content, chapter)
+                executor.submit(current_book_obj.download_vip_content, chapter)
     time.sleep(3)  # wait for all thread finish.
+    return current_book_obj
+
+
+def get_cache_file_name(book_info):
     set_file_name_list = []
     for file_name in os.listdir(Vars.current_command.cache):
         if file_name.find(book_info.novelId) != -1:
