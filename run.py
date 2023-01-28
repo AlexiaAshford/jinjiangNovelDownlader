@@ -15,7 +15,7 @@ def shell_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--download", nargs=1, default=None, help="please input book_id")
     parser.add_argument("-s", "--search", dest="search", nargs=1, default=None, help="search book by book name")
-    parser.add_argument("-m", "--max", dest="threading_max", default=None, help="please input max threading")
+    parser.add_argument("--max", default=32, help="please input max threading")
     parser.add_argument("--update", default=False, action="store_true", help="update books")
     parser.add_argument("--login", default=None, nargs="+", help="login account")
     parser.add_argument("--epub", default=True, action="store_true", help="output epub file")
@@ -41,13 +41,6 @@ def shell_parser():
             search_book(Vars.current_command.search[0])
         else:
             print("search book name is empty")
-
-    if Vars.current_command.threading_max:
-        if str(Vars.current_command.max).isdigit():
-            Vars.threading_max = int(Vars.current_command.max)
-            Vars.cfg.save()
-        else:
-            print("threading_max is not digit:", Vars.current_command.max)
 
     if Vars.current_command.download:
         shell_get_book_info(Vars.current_command.download[0])
@@ -81,7 +74,7 @@ def download_chapter(book_info):
     print(current_book_obj.book_detailed)
     get_chapter_list = src.Book.get_chapter_list(book_info.novelId)
     if get_chapter_list is not None:
-        with ThreadPoolExecutor(max_workers=32) as executor:
+        with ThreadPoolExecutor(max_workers=Vars.current_command.max) as executor:
             for chapter in get_chapter_list:  # type: template.ChapterInfo
                 if chapter.isvip == 0:
                     executor.submit(current_book_obj.download_no_vip_content, chapter)

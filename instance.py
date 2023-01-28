@@ -62,11 +62,8 @@ class File:
 
 class Vars:
     cfg = Config(os.getcwd() + '/config.json', os.getcwd())
-    current_bookshelf = []
     current_command = None
     current_book = None
-    current_epub = None
-    out_text_file = None
 
 
 def set_config():
@@ -84,18 +81,9 @@ def set_config():
     if Vars.cfg.data.get("config_path") is None or Vars.cfg.data.get("config_path") == "":
         Vars.cfg.data['config_path'] = "configs"
         save_config = True
-    if not isinstance(Vars.cfg.data.get("max_thread"), int):
-        Vars.cfg.data['max_thread'] = 8
-        save_config = True
+
     if save_config:
         Vars.cfg.save()
-
-
-def get_id(url: str) -> str:
-    result = re.compile(r'(\d+)').findall(str(url))
-    if len(result) > 0 and str(result[0]).isdigit():
-        return result[0]
-    print("[warning] get_id failed", url)
 
 
 def makedir_config(file_path, dir_path):
