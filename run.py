@@ -4,7 +4,7 @@ import book
 import argparse
 import template
 from instance import *
-from lib import get_url_id
+from lib import get_book_id_by_url
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -51,9 +51,10 @@ def shell_parser():
         shell_get_book_info(Vars.current_command.download[0])
 
 
-@get_url_id()
+@get_book_id_by_url()
 def shell_get_book_info(bookid: str):
     Vars.current_book = src.Book.novel_basic_info(bookid)
+    # print(Vars.current_book.novelCover)
     if Vars.current_book is None:
         return print("bookid is not exist:", bookid)
 
@@ -140,7 +141,7 @@ def search_book(search_name: str, next_page: int = 0):
         print("next page:[next or n]\t previous page:[previous or p], exit:[exit or e]")
         input_index = input("please input search index:")
         if str(input_index).isdigit() and int(input_index) < len(response["data"]):
-            get_book_info(response["data"][int(input_index)]["novelId"])
+            shell_get_book_info(response["data"][int(input_index)]["novelId"])
         elif input_index == "next" or input_index == "n":
             search_book(search_name=search_name, next_page=next_page + 1)
         elif input_index == "previous" or input_index == "p":
