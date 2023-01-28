@@ -155,27 +155,6 @@ def search_book(search_name: str, next_page: int = 1):
         elif input_index == "exit" or input_index == "e":
             return
     shell_get_book_info(novel_info_list[int(input_index)].novel_id)
-    # response = src.app.Book.search_info(keyword=search_name, page=next_page)
-    # if response.get("code") == '200':
-    #     for index, book_info in enumerate(response["data"]):
-    #         print("index:", index, "novelId:", book_info["novelId"], "novelName:", book_info["novelName"])
-    #     print("next page:[next or n]\t previous page:[previous or p], exit:[exit or e]")
-    #     input_index = input("please input search index:")
-    #     if str(input_index).isdigit() and int(input_index) < len(response["data"]):
-    #         shell_get_book_info(response["data"][int(input_index)]["novelId"])
-    #     elif input_index == "next" or input_index == "n":
-    #         search_book(search_name=search_name, next_page=next_page + 1)
-    #     elif input_index == "previous" or input_index == "p":
-    #         if next_page > 0:
-    #             search_book(search_name=search_name, next_page=next_page - 1)
-    #         else:
-    #             print("no previous page!")
-    #     elif input_index == "exit" or input_index == "e":
-    #         return False
-    #     else:
-    #         print("input index is not digit or out of range, please input again.")
-    # else:
-    #     print("search failed", response["message"])
 
 
 def login_account(username: str, password: str):
