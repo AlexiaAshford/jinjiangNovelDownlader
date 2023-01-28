@@ -64,28 +64,31 @@ def shell_get_book_info(bookid: str):
         os.makedirs(Vars.current_command.cache)
 
     current_book_obj = download_chapter(Vars.current_book)
+    if current_book_obj:
+        # clear output file information and write new description.
+        with open(f"{Vars.current_command.output}/{Vars.current_book.novelName}/{Vars.current_book.novelName}.txt", "w",
+                  encoding="utf-8") as f:
+            f.write(f"{current_book_obj.book_detailed}\n\n\n")
 
-    # clear output file information and write new description.
-    with open(f"{Vars.current_command.output}/{Vars.current_book.novelName}/{Vars.current_book.novelName}.txt", "w",
-              encoding="utf-8") as f:
-        f.write(f"{current_book_obj.book_detailed}\n\n\n")
-
-    output_text_and_epub_file(Vars.current_book, get_cache_file_name(Vars.current_book))
+        output_text_and_epub_file(Vars.current_book, get_cache_file_name(Vars.current_book))
 
 
 def download_chapter(book_info):
     current_book_obj = book.Book(book_info)  # create book object from book information.
     current_book_obj.set_downloaded_book_id_in_list()  # add book id to downloaded book id list.
     print(current_book_obj.book_detailed)
-    with ThreadPoolExecutor(max_workers=32) as executor:
-        for chapter in src.Book.get_chapter_list(book_info.novelId):  # type: template.ChapterInfo
-            if chapter.isvip == 0:
-                executor.submit(current_book_obj.download_no_vip_content, chapter)
-            else:
-                # vip chapter isvip is 2
-                executor.submit(current_book_obj.download_vip_content, chapter)
-    time.sleep(3)  # wait for all thread finish.
-    return current_book_obj
+    get_chapter_list = src.Book.get_chapter_list(book_info.novelId)
+    if get_chapter_list is not None:
+        with ThreadPoolExecutor(max_workers=32) as executor:
+            for chapter in get_chapter_list:  # type: template.ChapterInfo
+                if chapter.isvip == 0:
+                    executor.submit(current_book_obj.download_no_vip_content, chapter)
+                else:
+                    # vip chapter isvip is 2
+                    executor.submit(current_book_obj.download_vip_content, chapter)
+
+        time.sleep(1)  # wait for all thread finish.
+        return current_book_obj
 
 
 def get_cache_file_name(book_info):
@@ -101,7 +104,7 @@ def get_cache_file_name(book_info):
 def output_text_and_epub_file(book_info, file_name_list):
     with open(f"{Vars.current_command.output}/{book_info.novelName}/{book_info.novelName}.txt", "a",
               encoding="utf-8") as f2:
-        for index, file_name in enumerate(file_name_list):
+        for index, file_name in enumerate(file_name_list, start=1):
             with open(f"{Vars.current_command.cache}/{file_name}", "r", encoding="utf-8") as f:
                 # content = f.read()
                 # chapter_title = content.split("\n")[0]
@@ -131,30 +134,44 @@ def output_text_and_epub_file(book_info, file_name_list):
         #     print(f"download bookid:{bookid} failed, please try again.")
 
 
-def search_book(search_name: str, next_page: int = 0):
-    if search_name is None:
-        return False
-    response = src.app.Book.search_info(keyword=search_name, page=next_page)
-    if response.get("code") == '200':
-        for index, book_info in enumerate(response["data"]):
-            print("index:", index, "novelId:", book_info["novelId"], "novelName:", book_info["novelName"])
-        print("next page:[next or n]\t previous page:[previous or p], exit:[exit or e]")
-        input_index = input("please input search index:")
-        if str(input_index).isdigit() and int(input_index) < len(response["data"]):
-            shell_get_book_info(response["data"][int(input_index)]["novelId"])
+def search_book(search_name: str, next_page: int = 1):
+    novel_info_list = src.Book.search_info(keyword=search_name, page=next_page)
+    for index, novel_info in enumerate(novel_info_list):
+        print("index:", index, "\t\tnovelid:", novel_info.novel_id, "\t\tnovelName:", novel_info.novel_name)
+
+    print("next page:[next or n]\t previous page:[previous or p], exit:[exit or e], input index to download.")
+    while True:
+        input_index = input(">")
+        if input_index.isdigit() and int(input_index) < len(novel_info_list):
+            break
         elif input_index == "next" or input_index == "n":
-            search_book(search_name=search_name, next_page=next_page + 1)
+            return search_book(search_name, next_page + 1)
         elif input_index == "previous" or input_index == "p":
-            if next_page > 0:
-                search_book(search_name=search_name, next_page=next_page - 1)
-            else:
-                print("no previous page!")
+            return search_book(search_name, next_page - 1)
         elif input_index == "exit" or input_index == "e":
-            return False
-        else:
-            print("input index is not digit or out of range, please input again.")
-    else:
-        print("search failed", response["message"])
+            return
+    shell_get_book_info(novel_info_list[int(input_index)].novel_id)
+    # response = src.app.Book.search_info(keyword=search_name, page=next_page)
+    # if response.get("code") == '200':
+    #     for index, book_info in enumerate(response["data"]):
+    #         print("index:", index, "novelId:", book_info["novelId"], "novelName:", book_info["novelName"])
+    #     print("next page:[next or n]\t previous page:[previous or p], exit:[exit or e]")
+    #     input_index = input("please input search index:")
+    #     if str(input_index).isdigit() and int(input_index) < len(response["data"]):
+    #         shell_get_book_info(response["data"][int(input_index)]["novelId"])
+    #     elif input_index == "next" or input_index == "n":
+    #         search_book(search_name=search_name, next_page=next_page + 1)
+    #     elif input_index == "previous" or input_index == "p":
+    #         if next_page > 0:
+    #             search_book(search_name=search_name, next_page=next_page - 1)
+    #         else:
+    #             print("no previous page!")
+    #     elif input_index == "exit" or input_index == "e":
+    #         return False
+    #     else:
+    #         print("input index is not digit or out of range, please input again.")
+    # else:
+    #     print("search failed", response["message"])
 
 
 def login_account(username: str, password: str):

@@ -19,16 +19,32 @@ def novel_basic_info(response: dict) -> template.BookInfo:  # get book informati
 
 
 @GET(UrlConstant.SEARCH_INFO)
-def search_book(response: dict) -> [dict, None]:  # search book by keyword
-    if response.get("message") is None:  # get book information success then print book information.
-        return response  # create book object from book information.
-        # print book information with book detail.
+def search_home_page(response: dict) -> [dict, None]:  # search book by keyword
+    if response.get("code") == '200':
+        for novel_info in response.get("data"):
+            print("novelId:", novel_info.get("novelId"), "\t\tnovelName:", novel_info.get("novelName"))
     else:
         print("get book information failed, please try again.", response.get("message"))
 
 
+@GET("search")
+def search_book(response: dict):  # search book by keyword
+    novel_info_list = []
+    if response.get("items"):
+        print("search length:", len(response.get("items")))
+        for index, novel_info in enumerate(response.get("items")):
+            novel_info_list.append(template.SearchInfo(**novel_info))
+    else:
+        print("get book information failed, please try again.", response.get("message"))
+
+    return novel_info_list
+
+
 @GET(UrlConstant.CHAPTER_LIST)
 def get_chapter_list(response):  # get chapter list by novel_id
+    if response.get("message"):
+        print("get chapter list failed, please try again.", response.get("message"))
+        return None
     download_content = []
     for chapter in tqdm(response['chapterlist'], ncols=100):
         chap_info = template.ChapterInfo(**chapter)
@@ -76,23 +92,22 @@ class Book:  # book class for jinjiang NOVEL API
         return get_chapter_list(params={"novelId": novel_id, "more": 0, "whole": 1})
 
     @staticmethod
-    def search_info(keyword: str, search_id: int = 1, page: int = 0) -> [dict, None]:  # search book by keyword
-        if page == 0:
-            params: dict = {"keyword": keyword, "versionCode": Vars.cfg.data['versionCode'], "type": search_id}
-        else:
-            if Vars.cfg.data.get("user_info").get("token") == "":
-                params: dict = {
-                    "keyword": keyword,
-                    "type": search_id,
-                    "page": page,
-                    "pageSize": 20,
-                    "searchType": 8,
-                    "sortMode": "DESC",
-                    "token": Vars.cfg.data.get("user_info").get("token"),
-                    "versionCode": Vars.cfg.data['versionCode']
-                }
-            else:
-                return print("next page is not supported yet,you need to use the first page")
+    def search_info(keyword: str, page: int = 0) -> [dict, None]:  # search book by keyword
+        if page == 1:
+            print("搜索热门推荐")
+            search_home_page(params={"keyword": keyword, "versionCode": Vars.cfg.data['versionCode'], "type": 1})
+            print("=====================================")
+        params = {
+            "keyword": keyword,
+            "type": 1,
+            "page": page,
+            "pageSize": 20,
+            "searchType": 8,
+            "sortMode": "DESC",
+            "token": Vars.cfg.data.get("user_info").get("token"),
+            "versionCode": Vars.cfg.data['versionCode']
+
+        }
         return search_book(params=params)
 
 

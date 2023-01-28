@@ -7,7 +7,6 @@ def request(method, host, path):
     def decorator(func):
         def wrapper(params):
             response = requests.request(method=method, url=host + path, params=params)
-
             return func(response.json())
 
         return wrapper

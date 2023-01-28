@@ -106,3 +106,33 @@ class ContentInfo(BaseModel):
     authorid: typing.Optional[str] = None
     autobuystatus: typing.Optional[str] = None
     noteislock: typing.Optional[str] = None
+
+
+class SearchInfo(BaseModel):
+    novel_id: typing.Optional[str] = Field(None, alias="novelid")
+    novel_name: typing.Optional[str] = Field(None, alias="novelname")
+    author_name: typing.Optional[str] = Field(None, alias="authorname")
+    novelintroshort: typing.Optional[str] = None
+    novelstep: typing.Optional[str] = None
+    type_id: typing.Optional[str] = None
+    authorid: typing.Optional[str] = None
+    reviewrank: typing.Optional[str] = None
+    reviewnum: typing.Optional[str] = None
+    tags: typing.Optional[str] = None
+    ebookurl: typing.Optional[str] = None
+    novelborndate: typing.Optional[str] = None
+    novelsize: typing.Optional[str] = None
+    reviewscore: typing.Optional[str] = None
+    age: typing.Optional[str] = None
+    novelreviewexplain: typing.Optional[str] = None
+    filmname: typing.Optional[str] = None
+    filmtype: typing.Optional[str] = None
+    filmtext: typing.Optional[str] = None
+    filmlabel: typing.Optional[str] = None
+    cover: typing.Optional[str] = None
+    local: typing.Optional[str] = None
+    localImg: typing.Optional[str] = None
+    novelClass: typing.Optional[str] = None
+    novelSizeformat: typing.Optional[str] = None
+    novelintro: typing.Optional[str] = None
+    favoriteStatus: typing.Optional[str] = None
