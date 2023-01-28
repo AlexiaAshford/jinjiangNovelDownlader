@@ -4,6 +4,8 @@ import book
 import argparse
 import template
 from instance import *
+
+from prettytable import PrettyTable
 from lib import get_book_id_by_url
 
 from concurrent.futures import ThreadPoolExecutor
@@ -136,9 +138,11 @@ def output_text_and_epub_file(book_info, file_name_list):
 
 def search_book(search_name: str, next_page: int = 1):
     novel_info_list = src.Book.search_info(keyword=search_name, page=next_page)
-    for index, novel_info in enumerate(novel_info_list):
-        print("index:", index, "\t\tnovelid:", novel_info.novel_id, "\t\tnovelName:", novel_info.novel_name)
 
+    table = PrettyTable(['序号', '书号', '书名', '作者'])
+    for index, novel_info in enumerate(novel_info_list):
+        table.add_row([str(index), novel_info.novel_id, novel_info.novel_name, novel_info.author_name])
+    print(table)
     print("next page:[next or n]\t previous page:[previous or p], exit:[exit or e], input index to download.")
     while True:
         input_index = input(">")

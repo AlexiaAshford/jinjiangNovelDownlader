@@ -21,8 +21,7 @@ def novel_basic_info(response: dict) -> template.BookInfo:  # get book informati
 @GET(UrlConstant.SEARCH_INFO)
 def search_home_page(response: dict) -> [dict, None]:  # search book by keyword
     if response.get("code") == '200':
-        for novel_info in response.get("data"):
-            print("novelId:", novel_info.get("novelId"), "\t\tnovelName:", novel_info.get("novelName"))
+        return response.get("data")
     else:
         print("get book information failed, please try again.", response.get("message"))
 
@@ -31,7 +30,6 @@ def search_home_page(response: dict) -> [dict, None]:  # search book by keyword
 def search_book(response: dict):  # search book by keyword
     novel_info_list = []
     if response.get("items"):
-        print("search length:", len(response.get("items")))
         for index, novel_info in enumerate(response.get("items")):
             novel_info_list.append(template.SearchInfo(**novel_info))
     else:
@@ -93,10 +91,15 @@ class Book:  # book class for jinjiang NOVEL API
 
     @staticmethod
     def search_info(keyword: str, page: int = 0) -> [dict, None]:  # search book by keyword
+        search_recommend = []
         if page == 1:
-            print("搜索热门推荐")
-            search_home_page(params={"keyword": keyword, "versionCode": Vars.cfg.data['versionCode'], "type": 1})
-            print("=====================================")
+            params = {"keyword": keyword, "versionCode": Vars.cfg.data['versionCode'], "type": 1}
+            for i in search_home_page(params=params):
+                search_recommend.append(template.SearchInfo(
+                    novelid=i.get("novelId"),
+                    novelname=i.get("novelName"),
+                    authorname=i.get("authorName"),
+                ))
         params = {
             "keyword": keyword,
             "type": 1,
@@ -108,7 +111,11 @@ class Book:  # book class for jinjiang NOVEL API
             "versionCode": Vars.cfg.data['versionCode']
 
         }
-        return search_book(params=params)
+        search_result = search_book(params=params)
+        if search_recommend:
+            for i in search_recommend[::-1]:
+                search_result.insert(0, i)
+        return search_result
 
 
 __all__ = ["app", "decode", "request", "UrlConstant", 'Book']
