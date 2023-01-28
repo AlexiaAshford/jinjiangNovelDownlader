@@ -2,6 +2,36 @@ function getLocTime(nS) {
     return new Date(parseInt(nS) * 1000).toLocaleString().replace(/年|月/g, "-").replace(/日/g, " ");
 }
 
+
+function pwdEncryption(str) {
+    var k;
+    $.ajax({
+        url: '//my.jjwxc.net/login.php?action=setPwdKey&r=' + Math.random(),
+        async: false,
+        success: function (data) {
+            k = data;
+        }
+    });
+    var s = "", b, b1, b2, b3, pwdtype = "";
+    if (k) {
+        pwdtype = "encryption";
+        var strLen = k.length;
+        var a = k.split("");
+        for (var i = 0; i < str.length; i++) {
+            b = str.charCodeAt(i);
+            b1 = b % strLen;
+            b = (b - b1) / strLen;
+            b2 = b % strLen;
+            b = (b - b2) / strLen;
+            b3 = b % strLen;
+            s += a[b3] + a[b2] + a[b1];
+        }
+    } else {
+        s = str;
+    }
+    return {"pwdtype": pwdtype, "pwd": s};
+}
+
 $(function () {
     var captchaType;
     var now = new Date();
@@ -34,39 +64,11 @@ $(function () {
 
 })
 
-function checkfill(self) {
-    var loginname = encodeURI($('#loginname').val());
-    var loginpasswords = $('#loginpassword').val();
-    var auth_num = $('#auth_num').val();
-    if (loginname == '') {
-        alert('请输入用户名');
-        return false;
-    }
-    if (loginpasswords == '') {
-        alert('请输入密码');
-        return false;
-    }
-    if (!$("#loginregisterRule").prop('checked')) {
-        alert("请先阅读并同意《用户注册协议》和《隐私政策》");
-        return false;
-    }
-    if (needauth) {
-        if (captchaType == 'jjwxc') {
-            if (auth_num == '') {
-                alert('请输入验证码');
-                return false;
-            }
-        } else if (captchaType == 'shumei') {
-            if ($('input[name="shumei_captcha_rid"]').val() == '') {
-                alert('请先校验验证码');
-                return false;
-            }
-        }
-    }
+function checkfill(self, loginname, loginpassword) {
     //判断是否
     var loginForm = $(self).parents("form:eq(0)");
     loginForm.hide();
-    var pwdObj = pwdEncryption(loginpasswords);
+    var pwdObj = pwdEncryption(loginpassword);
     $("#loginpassword").remove();
     loginForm.append("<input type='text' value='" + pwdObj.pwd + " ' name='loginpassword'/>");
     $("#pwdtype").val(pwdObj.pwdtype);
