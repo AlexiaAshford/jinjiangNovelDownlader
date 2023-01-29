@@ -23,6 +23,7 @@ class Book:
     def book_detailed(self):
         book_detailed = "[info]书籍名称:{}".format(self.book_info.novelName)
         book_detailed += "\n[info]书籍作者:{}".format(self.book_info.authorName)
+        book_detailed += "\n[info]书籍序号:{}".format(self.book_info.novelId)
         book_detailed += "\n[info]书籍分类:{}".format(self.book_info.novelClass)
         book_detailed += "\n[info]书籍标签:{}".format(self.book_info.novelTags)
         book_detailed += "\n[info]章节总数:{}".format(self.book_info.novelChapterCount)

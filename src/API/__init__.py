@@ -1,6 +1,9 @@
 import os
 import re
 import time
+
+from prettytable import PrettyTable
+
 import template
 from . import *
 from lib import GET, POST
@@ -100,7 +103,7 @@ class Book:  # book class for jinjiang NOVEL API
                     novelname=i.get("novelName"),
                     authorname=i.get("authorName"),
                 ))
-        params = {
+        search_result = search_book(params={
             "keyword": keyword,
             "type": 1,
             "page": page,
@@ -110,12 +113,27 @@ class Book:  # book class for jinjiang NOVEL API
             "token": Vars.cfg.data.get("user_info").get("token"),
             "versionCode": Vars.cfg.data['versionCode']
 
-        }
-        search_result = search_book(params=params)
+        })
         if search_recommend:
             for i in search_recommend[::-1]:
                 search_result.insert(0, i)
-        return search_result
+
+        table = PrettyTable(['序号', '书号', '书名', '作者'])
+        for index, novel_info in enumerate(search_result):
+            table.add_row([str(index), novel_info.novel_id, novel_info.novel_name, novel_info.author_name])
+        print(table)
+        print("next page:[next or n]\t previous page:[previous or p], exit:[exit or e], input index to download.")
+        while True:
+            input_index = input(">")
+            if input_index.isdigit() and int(input_index) < len(search_result):
+                break
+            elif input_index == "next" or input_index == "n":
+                return Book.search_info(keyword, page + 1)
+            elif input_index == "previous" or input_index == "p":
+                return Book.search_info(keyword, page - 1)
+            elif input_index == "exit" or input_index == "e":
+                return
+        return search_result[int(input_index)].novel_id
 
 
 __all__ = ["app", "decode", "request", "UrlConstant", 'Book']

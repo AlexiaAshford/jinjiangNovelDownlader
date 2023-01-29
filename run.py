@@ -72,6 +72,9 @@ def download_chapter(book_info):
     current_book_obj = book.Book(book_info)  # create book object from book information.
     current_book_obj.set_downloaded_book_id_in_list()  # add book id to downloaded book id list.
     print(current_book_obj.book_detailed)
+    if current_book_obj.book_info.novelChapterCount == 0:
+        print("book chapter is empty.")
+        return None
     get_chapter_list = src.Book.get_chapter_list(book_info.novelId)
     if get_chapter_list is not None:
         with ThreadPoolExecutor(max_workers=Vars.current_command.max) as executor:
@@ -107,8 +110,8 @@ def output_text_and_epub_file(book_info, file_name_list):
 
     command_line = f"-file {Vars.current_command.output}/{book_info.novelName}/{book_info.novelName}.txt " \
                    f"-o {Vars.current_command.output}/{book_info.novelName} " \
-                   f"-cover {book_info.novelCover}"
-
+                   f"-cover \"{book_info.novelCover}\" " \
+                   f"--cover_name {book_info.novelId}"
     if Vars.current_command.epub:
         if os.name == 'nt':
             os.system(f"epub_windows_x64.exe " + command_line)
@@ -130,24 +133,11 @@ def output_text_and_epub_file(book_info, file_name_list):
 
 
 def search_book(search_name: str, next_page: int = 1):
-    novel_info_list = src.Book.search_info(keyword=search_name, page=next_page)
-
-    table = PrettyTable(['序号', '书号', '书名', '作者'])
-    for index, novel_info in enumerate(novel_info_list):
-        table.add_row([str(index), novel_info.novel_id, novel_info.novel_name, novel_info.author_name])
-    print(table)
-    print("next page:[next or n]\t previous page:[previous or p], exit:[exit or e], input index to download.")
-    while True:
-        input_index = input(">")
-        if input_index.isdigit() and int(input_index) < len(novel_info_list):
-            break
-        elif input_index == "next" or input_index == "n":
-            return search_book(search_name, next_page + 1)
-        elif input_index == "previous" or input_index == "p":
-            return search_book(search_name, next_page - 1)
-        elif input_index == "exit" or input_index == "e":
-            return
-    shell_get_book_info(novel_info_list[int(input_index)].novel_id)
+    book_id = src.Book.search_info(keyword=search_name, page=next_page)
+    if book_id is not None:
+        shell_get_book_info(book_id)
+    else:
+        print("search book failed, please try again.")
 
 
 def login_account(username: str, password: str):
