@@ -38,8 +38,8 @@ class Book:
             if isinstance(message, str):
                 self.download_failed_list.append([chapter_info, message])
         elif chapter_info.isvip == 2:
-            if Vars.cfg.data.get("token") == "":
-                print("you need login first to download vip chapter")
+            if not Vars.cfg.data.get("token"):
+                self.download_failed_list.append([chapter_info, "未登录,无法下载vip章节"])
             else:
                 message = src.Chapter.chapter_vip_content(self.book_info.novelId, chapter_info.chapterid,
                                                           chapter_info.cache_file_path)
