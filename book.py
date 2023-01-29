@@ -1,8 +1,8 @@
 import src
-from instance import *
+import template
 import threading
 from rich import print
-import template
+from instance import *
 
 
 class Book:
@@ -30,7 +30,8 @@ class Book:
         book_detailed += "\n[info]书籍简介:{}".format(self.descriptors)
         return book_detailed
 
-    def download_content(self, chapter_info: template.ChapterInfo):
+    def download_content(self, chapter_info: template.ChapterInfo, pbar):
+        pbar.update(1)
         if chapter_info.isvip == 0:
             message = src.Chapter.chapter_free_content(self.book_info.novelId, chapter_info.chapterid,
                                                        chapter_info.cache_file_path)

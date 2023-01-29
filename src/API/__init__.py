@@ -1,14 +1,11 @@
 import os
 import re
-import time
-
-# from . import *
+import template
 from lib import GET
 from tqdm import tqdm
+from rich import print
 from . import UrlConstant
 from instance import Vars
-import template
-from rich import print
 
 
 @GET(UrlConstant.NOVEL_INFO)
@@ -65,7 +62,7 @@ def get_chapter_list(response):  # get chapter list by novel_id
         print("get chapter list failed, please try again.", response.get("message"))
         return None
     download_content = []
-    for chapter in tqdm(response['chapterlist'], ncols=100):
+    for chapter in response['chapterlist']:
         chap_info = template.ChapterInfo(**chapter)
         chap_info.chaptername = re.sub(r'[\\/:*?"<>|]', '', chap_info.chaptername)
         chap_info.cache_file_path = os.path.join(Vars.current_command.cache,
@@ -74,11 +71,12 @@ def get_chapter_list(response):  # get chapter list by novel_id
                                                  chap_info.chaptername + ".txt"
                                                  )
         if not os.path.exists(chap_info.cache_file_path):
-            if chap_info.originalPrice == 0:
-                download_content.append(chap_info)
-            else:
-                if Vars.cfg.data.get("token"):
-                    download_content.append(chap_info)
+            download_content.append(chap_info)
+            # if chap_info.originalPrice == 0:
+            #     download_content.append(chap_info)
+            # else:
+            #     if Vars.cfg.data.get("token"):
+            #         download_content.append(chap_info)
     return download_content
 
 

@@ -3,6 +3,7 @@ import book
 import argparse
 import template
 from instance import *
+from tqdm import tqdm
 from prettytable import PrettyTable
 from lib import get_book_id_by_url
 
@@ -79,11 +80,13 @@ def download_chapter(book_info):
         return None
     get_chapter_list = src.Book.get_chapter_list(book_info.novelId)
     if get_chapter_list is not None:
+        new_tqdm = tqdm(total=len(get_chapter_list), desc="下载进度", ncols=100)
         with ThreadPoolExecutor(max_workers=Vars.current_command.max) as executor:
             for chapter in get_chapter_list:  # type: template.ChapterInfo
-                executor.submit(current_book_obj.download_content, chapter)
+                executor.submit(current_book_obj.download_content, chapter, new_tqdm)
 
         # time.sleep(1)  # wait for all thread finish.
+        new_tqdm.close()
         print("一共 {} 章下载失败".format(len(current_book_obj.download_failed_list)))
         table = PrettyTable(['序号', '章节名', '是否上架', '错误原因'])
 
