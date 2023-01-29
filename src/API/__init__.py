@@ -25,7 +25,7 @@ def search_home_page(response: dict) -> [dict, None]:  # search book by keyword
     if response.get("code") == '200':
         return response.get("data")
     else:
-        print("get book information failed, please try again.", response.get("message"))
+        print("search failed:", response.get("message"))
 
 
 @GET("getUserCenter")
@@ -51,7 +51,10 @@ def search_book(response: dict):  # search book by keyword
         for index, novel_info in enumerate(response.get("items")):
             novel_info_list.append(template.SearchInfo(**novel_info))
     else:
-        print("get book information failed, please try again.", response.get("message"))
+        if response.get("message") == "没有更多小说了！":
+            return response.get("message")
+        else:
+            print("search failed:", response.get("message"))
 
     return novel_info_list
 
@@ -151,6 +154,9 @@ class Book:  # book class for jinjiang NOVEL API
         if search_recommend:
             for i in search_recommend[::-1]:
                 search_result.insert(0, i)
+        # 判断是否搜索到最后一页
+        if isinstance(search_result, str):
+            return print(search_result)
 
         table = PrettyTable(['序号', '书号', '书名', '作者'])
         for index, novel_info in enumerate(search_result):
@@ -167,6 +173,9 @@ class Book:  # book class for jinjiang NOVEL API
             elif input_index == "next" or input_index == "n":
                 return Book.search_info(keyword, page + 1)
             elif input_index == "previous" or input_index == "p":
+                if page <= 1:
+                    print("已经是第一页了")
+                    continue
                 return Book.search_info(keyword, page - 1)
             elif input_index == "exit" or input_index == "e":
                 return

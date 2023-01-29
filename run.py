@@ -148,9 +148,6 @@ def search_book(search_name: str, next_page: int = 1):
     book_id = src.Book.search_info(keyword=search_name, page=next_page)
     if book_id is not None:
         shell_get_book_info(book_id)
-    else:
-        print("search book failed, please try again.")
-
 
 def login_account(username: str, password: str):
     response = src.app.Account.login(username, password)
