@@ -149,8 +149,9 @@ def search_book(search_name: str, next_page: int = 1):
     if book_id is not None:
         shell_get_book_info(book_id)
 
+
 def login_account(username: str, password: str):
-    response = src.app.Account.login(username, password)
+    response = src.Account.login(username, password)
     if response.get("message") is None:
         print("login success", response["nickName"], "vip:", response["readergrade"])
         Vars.cfg.data['user_info'] = {

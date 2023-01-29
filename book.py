@@ -31,33 +31,20 @@ class Book:
         return book_detailed
 
     def download_no_vip_content(self, chapter_info: template.ChapterInfo):
-        response = src.app.Chapter.chapter_content(self.book_info.novelId, chapter_info.chapterid)
-        content_info = template.ContentInfo(**response)  # create content info
-        if content_info.content:
-            with open(chapter_info.cache_file_path, "w", encoding="utf-8") as f:
-                f.write(content_info.chapterName + "\n")
-                for i in content_info.content.split("\n"):
-                    if i.strip() != "":
-                        f.write(i + "\n")
-        else:
-            self.download_failed_list.append([chapter_info, response.get("message")])
+        message = src.Chapter.chapter_free_content(self.book_info.novelId, chapter_info.chapterid,
+                                                   chapter_info.cache_file_path)
+        if isinstance(message, str):
+            self.download_failed_list.append([chapter_info, message])
 
     def download_vip_content(self, chapter_info: template.ChapterInfo):
         if Vars.cfg.data.get("token") == "":
             print("you need login first to download vip chapter")
             return False
         if chapter_info.isvip == 2:
-            response = src.app.Chapter.chapter_vip_content(self.book_info.novelId, chapter_info.chapterid)
-            if response.get("message") is None:
-                content_info = template.ContentInfo(**response)
-                content_info.content = src.decode.decrypt(content_info.content, token=True)
-                with open(chapter_info.cache_file_path, "w", encoding="utf-8") as f:
-                    f.write(content_info.chapterName + "\n")
-                    for i in content_info.content.split("\n"):
-                        if i.strip() != "":
-                            f.write(i + "\n")
-            else:
-                self.download_failed_list.append([chapter_info, response.get("message")])
+            message = src.Chapter.chapter_vip_content(self.book_info.novelId, chapter_info.chapterid,
+                                                      chapter_info.cache_file_path)
+            if isinstance(message, str):
+                self.download_failed_list.append([chapter_info, message])
 
     def set_downloaded_book_id_in_list(self):
         if isinstance(Vars.cfg.data['downloaded_book_id_list'], list):
