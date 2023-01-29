@@ -30,21 +30,22 @@ class Book:
         book_detailed += "\n[info]书籍简介:{}".format(self.descriptors)
         return book_detailed
 
-    def download_no_vip_content(self, chapter_info: template.ChapterInfo):
-        message = src.Chapter.chapter_free_content(self.book_info.novelId, chapter_info.chapterid,
-                                                   chapter_info.cache_file_path)
-        if isinstance(message, str):
-            self.download_failed_list.append([chapter_info, message])
-
-    def download_vip_content(self, chapter_info: template.ChapterInfo):
-        if Vars.cfg.data.get("token") == "":
-            print("you need login first to download vip chapter")
-            return False
-        if chapter_info.isvip == 2:
-            message = src.Chapter.chapter_vip_content(self.book_info.novelId, chapter_info.chapterid,
-                                                      chapter_info.cache_file_path)
+    def download_content(self, chapter_info: template.ChapterInfo):
+        if chapter_info.isvip == 0:
+            message = src.Chapter.chapter_free_content(self.book_info.novelId, chapter_info.chapterid,
+                                                       chapter_info.cache_file_path)
             if isinstance(message, str):
                 self.download_failed_list.append([chapter_info, message])
+        elif chapter_info.isvip == 2:
+            if Vars.cfg.data.get("token") == "":
+                print("you need login first to download vip chapter")
+            else:
+                message = src.Chapter.chapter_vip_content(self.book_info.novelId, chapter_info.chapterid,
+                                                          chapter_info.cache_file_path)
+                if isinstance(message, str):
+                    self.download_failed_list.append([chapter_info, message])
+        else:
+            print("chapter is not free or vip, log:{}".format(chapter_info.isvip))
 
     def set_downloaded_book_id_in_list(self):
         if isinstance(Vars.cfg.data['downloaded_book_id_list'], list):

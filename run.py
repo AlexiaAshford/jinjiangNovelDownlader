@@ -1,10 +1,8 @@
-import time
 import src
 import book
 import argparse
 import template
 from instance import *
-
 from prettytable import PrettyTable
 from lib import get_book_id_by_url
 
@@ -83,11 +81,7 @@ def download_chapter(book_info):
     if get_chapter_list is not None:
         with ThreadPoolExecutor(max_workers=Vars.current_command.max) as executor:
             for chapter in get_chapter_list:  # type: template.ChapterInfo
-                if chapter.isvip == 0:
-                    executor.submit(current_book_obj.download_no_vip_content, chapter)
-                else:
-                    # vip chapter isvip is 2
-                    executor.submit(current_book_obj.download_vip_content, chapter)
+                executor.submit(current_book_obj.download_content, chapter)
 
         # time.sleep(1)  # wait for all thread finish.
         print("一共 {} 章下载失败".format(len(current_book_obj.download_failed_list)))
