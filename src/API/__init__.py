@@ -38,7 +38,10 @@ def get_user_center(response: dict) -> [dict, None]:
 
 @GET("getAppUserinfo")
 def get_user_info(response: dict) -> [dict, None]:
-    return response
+    if not response.get("message"):
+        return response
+    else:
+        print("get user info failed:", response.get("message"))
 
 
 @GET("search")
@@ -67,12 +70,12 @@ def get_chapter_list(response):  # get chapter list by novel_id
                                                  chap_info.chapterid + "-" +
                                                  chap_info.chaptername + ".txt"
                                                  )
-        if os.path.exists(chap_info.cache_file_path):
-            pass
-            # print(chap_info.chaptername, "is exists, skip it")
-        else:
+        if not os.path.exists(chap_info.cache_file_path):
             if chap_info.originalPrice == 0:
                 download_content.append(chap_info)
+            else:
+                if Vars.cfg.data.get("token"):
+                    download_content.append(chap_info)
     return download_content
 
 
@@ -151,6 +154,9 @@ class Book:  # book class for jinjiang NOVEL API
 
         table = PrettyTable(['序号', '书号', '书名', '作者'])
         for index, novel_info in enumerate(search_result):
+            if len(novel_info.novel_name) > 15:
+                # 七八十字的书名都有...
+                novel_info.novel_name = novel_info.novel_name[:15] + "..."
             table.add_row([str(index), novel_info.novel_id, novel_info.novel_name, novel_info.author_name])
         print(table)
         print("next page:[next or n]\t previous page:[previous or p], exit:[exit or e], input index to download.")

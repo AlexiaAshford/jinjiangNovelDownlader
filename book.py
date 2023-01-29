@@ -56,16 +56,8 @@ class Book:
                     for i in content_info.content.split("\n"):
                         if i.strip() != "":
                             f.write(i + "\n")
-
-    # def show_download_results(self):  # show the download results
-    #     print("successful download chapter:", len(self.download_successful_list))
-    #     print("Not Purchased Chapter length:", len(self.not_purchased_list))
-    #     for chapter_index, chapter_info in enumerate(self.not_purchased_list):
-    #         print(
-    #             "顺序:", chapter_index,
-    #             "\t原价:", chapter_info.get("originalPrice"),
-    #             "\t章节名称:", chapter_info.get("chapterName")
-    #         )
+            else:
+                self.download_failed_list.append([chapter_info, response.get("message")])
 
     def set_downloaded_book_id_in_list(self):
         if isinstance(Vars.cfg.data['downloaded_book_id_list'], list):
