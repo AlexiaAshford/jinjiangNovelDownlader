@@ -21,33 +21,6 @@ class Account:  # account class for jinjiang NOVEL API
         return request.get(url=UrlConstant.LOGIN, params=params)  # login and get token
 
 
-class Book:  # book class for jinjiang NOVEL API
-    @staticmethod
-    def novel_basic_info(novel_id: str) -> dict:  # get book information by novel_id
-        return request.get(url=UrlConstant.NOVEL_INFO, params={"novelId": novel_id})
-
-    @staticmethod
-    def search_info(keyword: str, search_id: int = 1, page: int = 0) -> [dict, None]:  # search book by keyword
-        if page == 0:
-            params: dict = {"keyword": keyword, "versionCode": Vars.cfg.data['versionCode'], "type": search_id}
-        else:
-            if Vars.cfg.data.get("token") == "":
-                params: dict = {
-                    "keyword": keyword,
-                    "type": search_id,
-                    "page": page,
-                    "pageSize": 20,
-                    "searchType": 8,
-                    "sortMode": "DESC",
-                    "token": Vars.cfg.data.get("token"),
-                    "versionCode": Vars.cfg.data['versionCode']
-                }
-            else:
-                return print("token is empty you can't use this function")
-
-        return request.get(url=UrlConstant.SEARCH_INFO, params=params)
-
-
 class Chapter:  # chapter class for jinjiang NOVEL API
     @staticmethod
     def get_chapter_list(novel_id: str, more: int = 0, whole: int = 1) -> dict:  # get chapter list by novel_id

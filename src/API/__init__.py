@@ -1,15 +1,14 @@
 import os
 import re
 import time
-
-from prettytable import PrettyTable
-
 import template
 from . import *
-from lib import GET, POST
+from lib import GET
 from tqdm import tqdm
 from . import UrlConstant
 from instance import Vars
+from rich import print
+from prettytable import PrettyTable
 
 
 @GET(UrlConstant.NOVEL_INFO)
@@ -27,6 +26,19 @@ def search_home_page(response: dict) -> [dict, None]:  # search book by keyword
         return response.get("data")
     else:
         print("get book information failed, please try again.", response.get("message"))
+
+
+@GET("getUserCenter")
+def get_user_center(response: dict) -> [dict, None]:
+    if not response.get("message"):
+        return response
+    else:
+        print("get user info failed:", response.get("message"))
+
+
+@GET("getAppUserinfo")
+def get_user_info(response: dict) -> [dict, None]:
+    return response
 
 
 @GET("search")
@@ -83,6 +95,25 @@ def chapter_content(novel_id: str, chapter_id: str) -> dict:
     return request.get(url=UrlConstant.CONTENT, params=params)
 
 
+class Account:
+    @staticmethod
+    def login(username: str, password: str):
+        print("login...")
+
+    @staticmethod
+    def user_center():
+        params = {"versionCode": Vars.cfg.data['versionCode'], "token": Vars.cfg.data.get("token")}
+        result = get_user_center(params=params)
+        if result:
+            user_info = get_user_info(params=params)
+            print("用户信息:")
+            print("名称:", user_info.get("nickname"))
+            print("序号:", user_info.get("readerid"))
+            print("等级:", user_info.get("readergrade"))
+            print("余额:", result.get("balance"))
+            return True
+
+
 class Book:  # book class for jinjiang NOVEL API
     @staticmethod
     def novel_basic_info(novel_id: str) -> template.BookInfo:
@@ -136,4 +167,4 @@ class Book:  # book class for jinjiang NOVEL API
         return search_result[int(input_index)].novel_id
 
 
-__all__ = ["app", "decode", "request", "UrlConstant", 'Book']
+__all__ = ["app", "decode", "request", "UrlConstant", 'Book', 'Account']

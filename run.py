@@ -95,7 +95,7 @@ def download_chapter(book_info):
 
         for failed_chapter in current_book_obj.download_failed_list:
             table.add_row([failed_chapter[0].chapterid, failed_chapter[0].chaptername,
-                          "免费" if failed_chapter[0].isvip == 0 else "付费",
+                           "免费" if failed_chapter[0].isvip == 0 else "付费",
                            failed_chapter[1]])
         print(table)
         return current_book_obj
@@ -170,6 +170,8 @@ def login_account(username: str, password: str):
 
 if __name__ == '__main__':
     set_config()
+    if not src.Account.user_center():
+        print("test your account failed, please input your valid token.")
     try:
         shell_parser()
     except KeyboardInterrupt:
