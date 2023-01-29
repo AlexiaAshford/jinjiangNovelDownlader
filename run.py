@@ -15,6 +15,7 @@ def shell_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--download", nargs=1, default=None, help="please input book_id")
     parser.add_argument("-s", "--search", dest="search", nargs=1, default=None, help="search book by book name")
+    parser.add_argument("--token", default=None, help="add token")
     parser.add_argument("--max", default=32, help="please input max threading")
     parser.add_argument("--update", default=False, action="store_true", help="update books")
     parser.add_argument("--login", default=None, nargs="+", help="login account")
@@ -23,6 +24,9 @@ def shell_parser():
     parser.add_argument("--cache", default="cache", nargs="?", help="output epub file")
 
     Vars.current_command = parser.parse_args()
+    if Vars.current_command.token:
+        Vars.cfg.data['token'] = Vars.current_command.token
+        Vars.cfg.save()
     if Vars.current_command.login:
         if len(Vars.current_command.login) >= 2:
             login_account(Vars.current_command.login[0], Vars.current_command.login[1])
@@ -85,7 +89,15 @@ def download_chapter(book_info):
                     # vip chapter isvip is 2
                     executor.submit(current_book_obj.download_vip_content, chapter)
 
-        time.sleep(1)  # wait for all thread finish.
+        # time.sleep(1)  # wait for all thread finish.
+        print("一共 {} 章下载失败".format(len(current_book_obj.download_failed_list)))
+        table = PrettyTable(['序号', '章节名', '是否上架', '错误原因'])
+
+        for failed_chapter in current_book_obj.download_failed_list:
+            table.add_row([failed_chapter[0].chapterid, failed_chapter[0].chaptername,
+                          "免费" if failed_chapter[0].isvip == 0 else "付费",
+                           failed_chapter[1]])
+        print(table)
         return current_book_obj
 
 
@@ -111,14 +123,14 @@ def output_text_and_epub_file(book_info, file_name_list):
     command_line = f"-file {Vars.current_command.output}/{book_info.novelName}/{book_info.novelName}.txt " \
                    f"-o {Vars.current_command.output}/{book_info.novelName} " \
                    f"-cover \"{book_info.novelCover}\" " \
-                   f"--cover_name {book_info.novelId}"
+                   f"-cover_name {book_info.novelId}"
     if Vars.current_command.epub:
         if os.name == 'nt':
             os.system(f"epub_windows_x64.exe " + command_line)
         elif os.name == 'posix':
             os.system(f"./epub_linux_x64 " + command_line)
         else:
-            print("not support os, please use windows or linux x64")
+            print("not support os, please use windows or linux x64,create epub file failed.")
         # epub_book.epub_file_export()
         # current_book.show_download_results()  # show download results after download.
         # current_book.out_put_text_file()  # output book content to text file.

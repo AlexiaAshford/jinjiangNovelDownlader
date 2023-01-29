@@ -31,7 +31,7 @@ class Book:  # book class for jinjiang NOVEL API
         if page == 0:
             params: dict = {"keyword": keyword, "versionCode": Vars.cfg.data['versionCode'], "type": search_id}
         else:
-            if Vars.cfg.data.get("user_info").get("token") == "":
+            if Vars.cfg.data.get("token") == "":
                 params: dict = {
                     "keyword": keyword,
                     "type": search_id,
@@ -39,7 +39,7 @@ class Book:  # book class for jinjiang NOVEL API
                     "pageSize": 20,
                     "searchType": 8,
                     "sortMode": "DESC",
-                    "token": Vars.cfg.data.get("user_info").get("token"),
+                    "token": Vars.cfg.data.get("token"),
                     "versionCode": Vars.cfg.data['versionCode']
                 }
             else:
@@ -62,7 +62,7 @@ class Chapter:  # chapter class for jinjiang NOVEL API
             "versionCode": Vars.cfg.data['versionCode'],
             "readState": "readahead",
             "updateTime": int(time.time()),
-            "token": Vars.cfg.data.get("user_info").get("token")
+            "token": Vars.cfg.data.get("token")
         }
         return request.get(url=UrlConstant.CONTENT, params=params)
 

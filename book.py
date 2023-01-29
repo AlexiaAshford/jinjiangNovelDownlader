@@ -12,7 +12,7 @@ class Book:
         self.not_purchased_list = []
         self.download_successful_list = []
         self.book_info = book_info
-        # self.pool_sema = threading.BoundedSemaphore(Vars.cfg.data['max_thread'])
+        self.download_failed_list = []
         self.lock = threading.Lock()
 
     @property
@@ -40,10 +40,10 @@ class Book:
                     if i.strip() != "":
                         f.write(i + "\n")
         else:
-            print("get " + chapter_info.chaptername + " failed, message:", response.get("message"))
+            self.download_failed_list.append([chapter_info, response.get("message")])
 
     def download_vip_content(self, chapter_info: template.ChapterInfo):
-        if Vars.cfg.data.get("user_info").get("token") == "":
+        if Vars.cfg.data.get("token") == "":
             print("you need login first to download vip chapter")
             return False
         if chapter_info.isvip == 2:

@@ -72,7 +72,7 @@ def chapter_vip_content(novel_id: str, chapter_id: str) -> dict:
         "versionCode": Vars.cfg.data['versionCode'],
         "readState": "readahead",
         "updateTime": int(time.time()),
-        "token": Vars.cfg.data.get("user_info").get("token")
+        "token": Vars.cfg.data.get("token")
     }
     return request.get(url=UrlConstant.CONTENT, params=params)
 
@@ -110,7 +110,7 @@ class Book:  # book class for jinjiang NOVEL API
             "pageSize": 20,
             "searchType": 8,
             "sortMode": "DESC",
-            "token": Vars.cfg.data.get("user_info").get("token"),
+            "token": Vars.cfg.data.get("token"),
             "versionCode": Vars.cfg.data['versionCode']
 
         })

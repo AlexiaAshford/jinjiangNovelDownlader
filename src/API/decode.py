@@ -6,7 +6,7 @@ from base64 import b64encode, b64decode
 def decrypt(string: str, token: bool = False, key: str = "KK!%G3JdCHJxpAF3%Vg9pN"):  # decrypt string
     des_cbc = des("00000000", CBC, "1ae2c94b", padmode=PAD_PKCS5)
     if token:  # token is not empty add token to key
-        key = key + Vars.cfg.data.get("user_info").get("token")
+        key = key + Vars.cfg.data.get("token")
     des_cbc.setKey(key)  # set key
     return des_cbc.decrypt(b64decode(string)).decode("utf-8")
 
