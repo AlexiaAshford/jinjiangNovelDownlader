@@ -50,23 +50,18 @@ class Chapter:
         if response is None:
             return "程序错误,下载失败"
         if response.get("message") is None:
+
             content_info = template.ContentInfo(**response)
             content_info.content = decode.decrypt(content_info.content, token=True)
             if content_info.content:
-                content_base64 = base64.b64encode(
-                    '\n'.join([i for i in content_info.content.split("\n") if i.strip() != ""]).encode("utf-8")
-                )
                 database.session.add(
                     database.ChapterInfoSql(
                         novel_id=novel_id,
                         chapter_id=chapter_id,
                         chapter_name=content_info.chapterName,
-                        chapter_content=lib.des_encrypt(content_base64.decode("utf-8"))
+                        chapter_content=lib.encrypt_aes(content_info.content)
                     )
                 )
-                # with open(cache_file_path, "w", encoding="utf-8") as f:
-                #     f.write(content_info.chapterName + "\n")
-                #     [f.write(i + "\n") for i in content_info.content.split("\n") if i.strip() != ""]
         else:
             return response.get("message")
 
@@ -78,15 +73,12 @@ class Chapter:
         if response.get("message") is None:
             content_info = template.ContentInfo(**response)  # create content info
             if content_info.content:
-                content_base64 = base64.b64encode(
-                    '\n'.join([i for i in content_info.content.split("\n") if i.strip() != ""]).encode("utf-8")
-                )
                 database.session.add(
                     database.ChapterInfoSql(
                         novel_id=novel_id,
                         chapter_id=chapter_id,
                         chapter_name=content_info.chapterName,
-                        chapter_content=lib.des_encrypt(content_base64.decode("utf-8"))
+                        chapter_content=lib.encrypt_aes(content_info.content)
                     )
                 )
                 # with open(cache_file_path, "w", encoding="utf-8") as f:

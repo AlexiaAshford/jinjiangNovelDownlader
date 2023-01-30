@@ -63,8 +63,6 @@ def shell_get_book_info(bookid: str):
 
     if not os.path.exists(f"{Vars.current_command.output}/{Vars.current_book.novelName}"):
         os.makedirs(f"{Vars.current_command.output}/{Vars.current_book.novelName}")
-    # if not os.path.exists(Vars.current_command.cache):
-    #     os.makedirs(Vars.current_command.cache)
 
     current_book_obj = download_chapter(Vars.current_book)
     if current_book_obj:
@@ -86,16 +84,17 @@ def download_chapter(book_info):
     get_chapter_list = src.Book.get_chapter_list(book_info.novelId)
     if get_chapter_list is not None:
         new_tqdm = tqdm(total=len(get_chapter_list), desc="下载进度", ncols=100)
-        with ThreadPoolExecutor(max_workers=Vars.current_command.max) as executor:
-            for chapter in get_chapter_list:  # type: template.ChapterInfo
-                executor.submit(current_book_obj.download_content, chapter, new_tqdm)
+        # with ThreadPoolExecutor(max_workers=Vars.current_command.max) as executor:
+        #     for chapter in get_chapter_list:  # type: template.ChapterInfo
+        #         executor.submit(current_book_obj.download_content, chapter, new_tqdm)
 
+        for chapter in get_chapter_list:  # type: template.ChapterInfo
+            current_book_obj.download_content(chapter, new_tqdm)
         # time.sleep(1)  # wait for all thread finish.
         new_tqdm.close()
         database.session.commit()
         print("一共 {} 章下载失败".format(len(current_book_obj.download_failed_list)))
         table = PrettyTable(['序号', '章节名', '是否上架', '错误原因'])
-
         for failed_chapter in current_book_obj.download_failed_list:
             table.add_row([failed_chapter[0].chapterid, failed_chapter[0].chaptername,
                            "免费" if failed_chapter[0].isvip == 0 else "付费",
@@ -122,14 +121,9 @@ def output_text_and_epub_file(book_info):
     with open(f"{Vars.current_command.output}/{book_info.novelName}/{book_info.novelName}.txt", "a",
               encoding="utf-8") as f2:
         for chapter in chapter_list:  # type: database.ChapterInfoSql
-            decode_content = base64.b64decode(lib.decrypt(chapter.chapter_content)).decode("utf-8")
-            f2.write(f"\n\n\n第{chapter.chapter_id}章: " + chapter.chapter_name + "\n\n" + decode_content)
-
-        # for index, file_name in enumerate(file_name_list, start=1):
-        #     with open(f"{Vars.current_command.cache}/{file_name}", "r", encoding="utf-8") as f:
-        #         # content = f.read()
-        #         # chapter_title = content.split("\n")[0]
-        #         f2.write(f"\n\n\n第{index}章 " + f.read())
+            chapter_name = f"\n\n\n第{chapter.chapter_id}章: " + chapter.chapter_name
+            # print(chapter.chapter_content)
+            f2.write(chapter_name + "\n\n" + lib.decrypt_aes(chapter.chapter_content))
 
     command_line = f"-file {Vars.current_command.output}/{book_info.novelName}/{book_info.novelName}.txt " \
                    f"-o {Vars.current_command.output}/{book_info.novelName} " \
@@ -182,6 +176,7 @@ if __name__ == '__main__':
     set_config()
     # init command line arguments.
     Vars.current_command = parse_args()
+    database.session.execute("CREATE INDEX IF NOT EXISTS chapter_index ON chapterinfo (novel_id);")
     if not src.Account.user_center():
         print("[err]test your account failed, please input your valid token.")
 

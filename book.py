@@ -46,11 +46,11 @@ class Book:
         else:
             print("chapter is not free or vip, log:{}".format(chapter_info.isvip))
 
-    def set_downloaded_book_id_in_list(self):
-        if isinstance(Vars.cfg.data['downloaded_book_id_list'], list):
-            if self.book_info.novelId not in Vars.cfg.data['downloaded_book_id_list']:
-                Vars.cfg.data['downloaded_book_id_list'].append(self.book_info.novelId)
-                Vars.cfg.save()
-            return True
-        Vars.cfg.data['downloaded_book_id_list'] = [self.book_info.novelId]
-        Vars.cfg.save()
+    # def set_downloaded_book_id_in_list(self):
+    #     if isinstance(Vars.cfg.data['downloaded_book_id_list'], list):
+    #         if self.book_info.novelId not in Vars.cfg.data['downloaded_book_id_list']:
+    #             Vars.cfg.data['downloaded_book_id_list'].append(self.book_info.novelId)
+    #             Vars.cfg.save()
+    #         return True
+    #     Vars.cfg.data['downloaded_book_id_list'] = [self.book_info.novelId]
+    #     Vars.cfg.save()
