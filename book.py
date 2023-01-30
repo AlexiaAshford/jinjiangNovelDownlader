@@ -43,7 +43,7 @@ class Book:
                 # if max_id is None:
                 #     max_id = 0
                 md5 = hashlib.md5()
-                md5.update(chapter_info.chaptername.encode('utf-8'))
+                md5.update(chapter_info.chaptername.encode('utf-8') + chapter_info.novelid.encode('utf-8'))
 
                 database.session.add(
                     database.ChapterInfoSql(
