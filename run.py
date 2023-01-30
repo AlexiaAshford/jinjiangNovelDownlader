@@ -62,7 +62,9 @@ def shell_get_book_info(bookid: str):
         database.session.commit()
     else:
         print("check database exist book information, not get information from server api.")
-        Vars.current_book = template.BookInfo(**filter_info)
+        # delete sqlalchemy object attribute.
+        filter_info.__dict__.pop("_sa_instance_state")
+        Vars.current_book = template.BookInfo(**filter_info.__dict__)
 
     if not os.path.exists(f"{Vars.current_command.output}/{Vars.current_book.novelName}"):
         os.makedirs(f"{Vars.current_command.output}/{Vars.current_book.novelName}")
