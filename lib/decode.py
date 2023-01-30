@@ -6,6 +6,25 @@ from pyDes import des, CBC, PAD_PKCS5
 from base64 import b64encode, b64decode
 
 iv = b'\0' * 16
+key = 'zG2nSeEfSHfvTCHy5LCcqtBbQehKNLXn'
+
+
+def encrypt_aes(text):
+    aes_key = hashlib.sha256(key.encode('utf-8')).digest()
+    aes = AES.new(aes_key, AES.MODE_CFB, iv)
+    return base64.b64encode(aes.encrypt(text))
+
+
+def decrypt_aes(encrypted):
+    aes_key = hashlib.sha256(key.encode('utf-8')).digest()
+    aes = AES.new(aes_key, AES.MODE_CBC, iv)
+    return pkcs7un_padding(aes.decrypt(base64.b64decode(encrypted)))
+
+
+def pkcs7un_padding(data):
+    length = len(data)
+    un_padding = ord(chr(data[length - 1]))
+    return data[0:length - un_padding]
 
 
 def decrypt(string: str, token: bool = False, key: str = "KK!%G3JdCHJxpAF3%Vg9pN"):  # decrypt string
@@ -14,12 +33,6 @@ def decrypt(string: str, token: bool = False, key: str = "KK!%G3JdCHJxpAF3%Vg9pN
         key = key + Vars.cfg.data.get("token")
     des_cbc.setKey(key)  # set key
     return des_cbc.decrypt(b64decode(string)).decode("utf-8")
-
-
-def encrypt(text, key='zG2nSeEfSHfvTCHy5LCcqtBbQehKNLXn'):
-    aes_key = hashlib.sha256(key.encode('utf-8')).digest()
-    aes = AES.new(aes_key, AES.MODE_CFB, iv)
-    return base64.b64encode(aes.encrypt(text))
 
 
 def des_encrypt(string: str, token: str = None, key: str = "KK!%G3JdCHJxpAF3%Vg9pN"):  # encrypt string
