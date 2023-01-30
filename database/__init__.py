@@ -68,5 +68,11 @@ class ChapterInfoSql(Base):
     chapter_content: typing.Optional[str] = Column(String)
 
 
+class CoverSql(Base):
+    __tablename__ = 'cover'
+    novelId: typing.Optional[str] = Column(Integer, primary_key=True)
+    Cover: typing.Optional[str] = Column(String)
+
+
 Base.metadata.create_all(engine)
 session = sessionmaker(bind=engine)()

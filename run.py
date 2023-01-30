@@ -1,3 +1,6 @@
+import base64
+
+import lib
 import src
 import book
 import argparse
@@ -22,11 +25,15 @@ def shell_command():
             print("login failed, please input username and password")
 
     if Vars.current_command.update:
-        if Vars.cfg.data['downloaded_book_id_list'] > 0:
-            for book_id in Vars.cfg.data['downloaded_book_id_list']:
-                shell_get_book_info(book_id)
-        else:
-            print("no book downloaded, please download book first.")
+        results = database.session.query(database.BookInfoSql).filter().all()
+        if len(results) > 1:
+            table = PrettyTable()
+            table.field_names = ["序号", "书名", "作者", "章节数"]
+            for result in results:  # type: database.BookInfoSql
+                table.add_row([result.novelId, result.novelName, result.authorName, result.novelChapterCount])
+            print(table)
+            for result in results:
+                shell_get_book_info(result.novelId)
 
     if Vars.current_command.search:
         if Vars.current_command.search[0] != '':
@@ -56,8 +63,8 @@ def shell_get_book_info(bookid: str):
 
     if not os.path.exists(f"{Vars.current_command.output}/{Vars.current_book.novelName}"):
         os.makedirs(f"{Vars.current_command.output}/{Vars.current_book.novelName}")
-    if not os.path.exists(Vars.current_command.cache):
-        os.makedirs(Vars.current_command.cache)
+    # if not os.path.exists(Vars.current_command.cache):
+    #     os.makedirs(Vars.current_command.cache)
 
     current_book_obj = download_chapter(Vars.current_book)
     if current_book_obj:
@@ -66,12 +73,12 @@ def shell_get_book_info(bookid: str):
                   encoding="utf-8") as f:
             f.write(f"{current_book_obj.book_detailed}\n\n\n")
 
-        output_text_and_epub_file(Vars.current_book, get_cache_file_name(Vars.current_book))
+        output_text_and_epub_file(Vars.current_book)
 
 
 def download_chapter(book_info):
     current_book_obj = book.Book(book_info)  # create book object from book information.
-    current_book_obj.set_downloaded_book_id_in_list()  # add book id to downloaded book id list.
+    # current_book_obj.set_downloaded_book_id_in_list()  # add book id to downloaded book id list.
     print(current_book_obj.book_detailed)
     if current_book_obj.book_info.novelChapterCount == 0:
         print("book chapter is empty.")
@@ -97,29 +104,38 @@ def download_chapter(book_info):
         return current_book_obj
 
 
-def get_cache_file_name(book_info):
-    set_file_name_list = []
-    for file_name in os.listdir(Vars.current_command.cache):
-        if file_name.find(book_info.novelId) != -1:
-            set_file_name_list.append(file_name)
+# def get_cache_file_name(book_info):
+#     set_file_name_list = []
+#     for file_name in os.listdir(Vars.current_command.cache):
+#         if file_name.find(book_info.novelId) != -1:
+#             set_file_name_list.append(file_name)
+#
+#     set_file_name_list.sort(key=lambda x: int(x.split("-")[1]))  # sort file name by chapter id number.
+#     return set_file_name_list
 
-    set_file_name_list.sort(key=lambda x: int(x.split("-")[1]))  # sort file name by chapter id number.
-    return set_file_name_list
 
+def output_text_and_epub_file(book_info):
+    chapter_list = database.session.query(database.ChapterInfoSql).filter(
+        database.ChapterInfoSql.novel_id == book_info.novelId).all()
 
-def output_text_and_epub_file(book_info, file_name_list):
+    chapter_list.sort(key=lambda x: int(x.chapter_id))  # sort chapter list by chapter id number.
     with open(f"{Vars.current_command.output}/{book_info.novelName}/{book_info.novelName}.txt", "a",
               encoding="utf-8") as f2:
-        for index, file_name in enumerate(file_name_list, start=1):
-            with open(f"{Vars.current_command.cache}/{file_name}", "r", encoding="utf-8") as f:
-                # content = f.read()
-                # chapter_title = content.split("\n")[0]
-                f2.write(f"\n\n\n第{index}章 " + f.read())
+        for chapter in chapter_list:  # type: database.ChapterInfoSql
+            decode_content = base64.b64decode(lib.decrypt(chapter.chapter_content)).decode("utf-8")
+            f2.write(f"\n\n\n第{chapter.chapter_id}章: " + chapter.chapter_name + "\n\n" + decode_content)
+
+        # for index, file_name in enumerate(file_name_list, start=1):
+        #     with open(f"{Vars.current_command.cache}/{file_name}", "r", encoding="utf-8") as f:
+        #         # content = f.read()
+        #         # chapter_title = content.split("\n")[0]
+        #         f2.write(f"\n\n\n第{index}章 " + f.read())
 
     command_line = f"-file {Vars.current_command.output}/{book_info.novelName}/{book_info.novelName}.txt " \
                    f"-o {Vars.current_command.output}/{book_info.novelName} " \
                    f"-cover \"{book_info.novelCover}\" " \
                    f"-cover_name {book_info.novelId}"
+
     if Vars.current_command.epub:
         if os.name == 'nt':
             os.system(f"epub_windows_x64.exe " + command_line)

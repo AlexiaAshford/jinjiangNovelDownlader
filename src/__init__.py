@@ -1,6 +1,7 @@
+import base64
 import random
 import time
-import database
+import lib
 from .API import *
 from lib import decode
 from prettytable import PrettyTable
@@ -37,7 +38,7 @@ class Account:
 
 class Chapter:
     @staticmethod
-    def chapter_vip_content(novel_id: str, chapter_id, cache_file_path) -> str:  # get chapter list by novel_id
+    def chapter_vip_content(novel_id: str, chapter_id) -> str:  # get chapter list by novel_id
         response = get_chapter_vip_content(params={
             "novelId": novel_id,
             "chapterId": chapter_id,
@@ -52,39 +53,45 @@ class Chapter:
             content_info = template.ContentInfo(**response)
             content_info.content = decode.decrypt(content_info.content, token=True)
             if content_info.content:
+                content_base64 = base64.b64encode(
+                    '\n'.join([i for i in content_info.content.split("\n") if i.strip() != ""]).encode("utf-8")
+                )
                 database.session.add(
                     database.ChapterInfoSql(
                         novel_id=novel_id,
                         chapter_id=chapter_id,
                         chapter_name=content_info.chapterName,
-                        chapter_content='\n'.join([i for i in content_info.content.split("\n") if i.strip() != ""])
+                        chapter_content=lib.des_encrypt(content_base64.decode("utf-8"))
                     )
                 )
-                with open(cache_file_path, "w", encoding="utf-8") as f:
-                    f.write(content_info.chapterName + "\n")
-                    [f.write(i + "\n") for i in content_info.content.split("\n") if i.strip() != ""]
+                # with open(cache_file_path, "w", encoding="utf-8") as f:
+                #     f.write(content_info.chapterName + "\n")
+                #     [f.write(i + "\n") for i in content_info.content.split("\n") if i.strip() != ""]
         else:
             return response.get("message")
 
     @staticmethod
-    def chapter_free_content(novel_id: str, chapter_id, cache_file_path) -> str:
+    def chapter_free_content(novel_id: str, chapter_id) -> str:
         response = get_chapter_free_content(params={"novelId": novel_id, "chapterId": chapter_id})
         if response is None:
             return "程序错误,下载失败"
         if response.get("message") is None:
             content_info = template.ContentInfo(**response)  # create content info
             if content_info.content:
+                content_base64 = base64.b64encode(
+                    '\n'.join([i for i in content_info.content.split("\n") if i.strip() != ""]).encode("utf-8")
+                )
                 database.session.add(
                     database.ChapterInfoSql(
                         novel_id=novel_id,
                         chapter_id=chapter_id,
                         chapter_name=content_info.chapterName,
-                        chapter_content='\n'.join([i for i in content_info.content.split("\n") if i.strip() != ""])
+                        chapter_content=lib.des_encrypt(content_base64.decode("utf-8"))
                     )
                 )
-                with open(cache_file_path, "w", encoding="utf-8") as f:
-                    f.write(content_info.chapterName + "\n")
-                    [f.write(i + "\n") for i in content_info.content.split("\n") if i.strip() != ""]
+                # with open(cache_file_path, "w", encoding="utf-8") as f:
+                #     f.write(content_info.chapterName + "\n")
+                #     [f.write(i + "\n") for i in content_info.content.split("\n") if i.strip() != ""]
         else:
             return response.get("message")
 

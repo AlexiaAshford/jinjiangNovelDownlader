@@ -11,7 +11,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--login", default=None, nargs="+", help="login account")
     parser.add_argument("--epub", default=True, action="store_true", help="output epub file")
     parser.add_argument("--output", default="downloads", nargs="?", help="output epub file")
-    parser.add_argument("--cache", default="cache", nargs="?", help="output epub file")
+    # parser.add_argument("--cache", default="cache", nargs="?", help="output epub file")
     parser.add_argument("--update_database", default=False, action="store_true", help="update database")
 
     return parser.parse_args()
