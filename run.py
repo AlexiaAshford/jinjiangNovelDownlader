@@ -2,6 +2,7 @@ import src
 import book
 import argparse
 import template
+import database
 from instance import *
 from tqdm import tqdm
 from prettytable import PrettyTable
@@ -51,10 +52,17 @@ def shell_parser():
 
 @get_book_id_by_url()
 def shell_get_book_info(bookid: str):
-    Vars.current_book = src.Book.novel_basic_info(bookid)
-    # print(Vars.current_book.novelCover)
-    if Vars.current_book is None:
-        return print("bookid is not exist:", bookid)
+    filter_info = database.session.query(database.BookInfoSql).filter(database.BookInfoSql.novelId == bookid).first()
+    if not filter_info:
+        print("check database not exist book information, get information from server api.")
+        Vars.current_book = src.Book.novel_basic_info(bookid)
+        if Vars.current_book is None:
+            return print("bookid is not exist:", bookid)
+        database.session.add(database.BookInfoSql(**Vars.current_book.dict()))
+        database.session.commit()
+    else:
+        print("check database exist book information, not get information from server api.")
+        Vars.current_book = template.BookInfo(**filter_info)
 
     if not os.path.exists(f"{Vars.current_command.output}/{Vars.current_book.novelName}"):
         os.makedirs(f"{Vars.current_command.output}/{Vars.current_book.novelName}")
@@ -166,7 +174,7 @@ def login_account(username: str, password: str):
 if __name__ == '__main__':
     set_config()
     if not src.Account.user_center():
-        print("test your account failed, please input your valid token.")
+        print("[err]test your account failed, please input your valid token.")
     try:
         shell_parser()
     except KeyboardInterrupt:

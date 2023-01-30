@@ -30,7 +30,7 @@ def get_user_center(response: dict) -> [dict, None]:
     if not response.get("message"):
         return response
     else:
-        print("get user info failed:", response.get("message"))
+        print("[err]get user info failed:", response.get("message"))
 
 
 @GET("getAppUserinfo")

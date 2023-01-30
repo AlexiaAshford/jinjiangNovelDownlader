@@ -1,4 +1,3 @@
-# import pydantic
 import typing
 from pydantic import BaseModel, Field
 
@@ -51,15 +50,7 @@ class BookInfo(BaseModel):
     novelReviewScore: typing.Optional[str] = None
     authorsayrule: typing.Optional[str] = None
     copystatus: typing.Optional[str] = None
-    yellowcard: typing.Optional[list] = None
 
-
-# class BookInfo2(pydantic.BaseModel):
-#     novel_id: typing.Optional[str] = Field(None, alias="novelId")
-#     novel_name: typing.Optional[str] = Field(None, alias="novelName")
-#     author_id: typing.Optional[str] = Field(None, alias="authorId")
-#     author_name: typing.Optional[str] = Field(None, alias="authorName")
-#     novel_class: typing.Optional[str] = Field(None, alias="novelClass")
 
 class ChapterInfo(BaseModel):
     novelid: typing.Optional[str] = None
