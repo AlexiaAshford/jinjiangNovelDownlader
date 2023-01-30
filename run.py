@@ -22,6 +22,7 @@ def shell_parser():
     parser.add_argument("--epub", default=True, action="store_true", help="output epub file")
     parser.add_argument("--output", default="downloads", nargs="?", help="output epub file")
     parser.add_argument("--cache", default="cache", nargs="?", help="output epub file")
+    parser.add_argument("--update_database", default=False, action="store_true", help="update database")
 
     Vars.current_command = parser.parse_args()
     if Vars.current_command.token:
@@ -53,7 +54,7 @@ def shell_parser():
 @get_book_id_by_url()
 def shell_get_book_info(bookid: str):
     filter_info = database.session.query(database.BookInfoSql).filter(database.BookInfoSql.novelId == bookid).first()
-    if not filter_info:
+    if not filter_info or Vars.current_command.update_database:
         print("check database not exist book information, get information from server api.")
         Vars.current_book = src.Book.novel_basic_info(bookid)
         if Vars.current_book is None:
