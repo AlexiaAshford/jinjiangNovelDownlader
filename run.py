@@ -92,7 +92,11 @@ def download_chapter(book_info):
         #     current_book_obj.download_content(chapter, new_tqdm)
         # time.sleep(1)  # wait for all thread finish.
         new_tqdm.close()
-        database.session.commit()
+        try:
+            database.session.commit()
+        except Exception as e:
+            print("commit database error:", e)
+            database.session.rollback()
         print("一共 {} 章下载失败".format(len(current_book_obj.download_failed_list)))
         table = PrettyTable(['序号', '章节名', '是否上架', '错误原因'])
         for failed_chapter in current_book_obj.download_failed_list:

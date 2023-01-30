@@ -1,10 +1,10 @@
 import database
 import lib
 import src
+import hashlib
 import template
 import threading
 from rich import print
-from instance import *
 
 
 class Book:
@@ -39,12 +39,15 @@ class Book:
             if chapter_info.isvip == 2:
                 response.content = lib.decode.decrypt(response.content, token=True)
             if response.content:
-                max_id = database.session.query(database.func.max(database.ChapterInfoSql.id)).scalar()
-                if max_id is None:
-                    max_id = 0
+                # max_id = database.session.query(database.func.max(database.ChapterInfoSql.id)).scalar()
+                # if max_id is None:
+                #     max_id = 0
+                md5 = hashlib.md5()
+                md5.update(chapter_info.chaptername.encode('utf-8'))
+
                 database.session.add(
                     database.ChapterInfoSql(
-                        id=max_id + 1,
+                        id=md5.hexdigest(),
                         novel_id=chapter_info.novelid,
                         chapter_id=chapter_info.chapterid,
                         chapter_name=chapter_info.chaptername,
