@@ -127,3 +127,45 @@ class SearchInfo(BaseModel):
     novelSizeformat: typing.Optional[str] = None
     novelintro: typing.Optional[str] = None
     favoriteStatus: typing.Optional[str] = None
+
+
+class UserCenter(BaseModel):
+    message: typing.Optional[str] = None
+    avatar: typing.Optional[str] = None
+    balance: typing.Optional[str] = None
+    smstotal: typing.Optional[str] = None
+    nutrition: typing.Optional[str] = None
+    nofeeds: typing.Optional[str] = None
+    backPoint: typing.Optional[str] = None
+    smstotalPublic: typing.Optional[str] = None
+    smstotalPrivate: typing.Optional[str] = None
+    coinstotal: typing.Optional[str] = None
+    nickName: typing.Optional[str] = None
+    registeAuthor: typing.Optional[dict] = None
+    authorBlackInfo: typing.Optional[dict] = None
+    authorid: typing.Optional[str] = None
+    windowSms: typing.Optional[str] = None
+    authorPhoto: typing.Optional[str] = None
+
+
+class UserInfo(BaseModel):
+    message: typing.Optional[str] = None
+    readerid: typing.Optional[str] = None
+    authorname: typing.Optional[str] = None
+    nickname: typing.Optional[str] = None
+    readergrade: typing.Optional[str] = None
+    nicknameTips: typing.Optional[str] = None
+    bindmobile: typing.Optional[dict] = None
+    paypwdrange: typing.Optional[dict] = None
+    useridentity: typing.Optional[dict] = None
+    email: typing.Optional[dict] = None
+    paypwd: typing.Optional[dict] = None
+    safeanswer: typing.Optional[dict] = None
+    password: typing.Optional[dict] = None
+    deviceInfo: typing.Optional[dict] = None
+    readerGrade: typing.Optional[dict] = None
+    binddeviceInfo: typing.Optional[dict] = None
+    contact: typing.Optional[dict] = None
+    receiveAddress: typing.Optional[dict] = None
+    protection: typing.Optional[str] = None
+    creditscore: typing.Optional[dict] = None

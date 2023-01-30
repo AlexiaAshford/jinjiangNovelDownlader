@@ -1,4 +1,5 @@
 import random
+import time
 
 from .API import *
 from lib import decode
@@ -27,11 +28,10 @@ class Account:
         result = get_user_center(params=params)
         if result:
             user_info = get_user_info(params=params)
-            print("用户信息:")
-            print("名称:", user_info.get("nickname"))
-            print("序号:", user_info.get("readerid"))
-            print("等级:", user_info.get("readergrade"))
-            print("余额:", result.get("balance"))
+            table = PrettyTable()
+            table.field_names = ["名称", "序号", "等级", "余额"]
+            table.add_row([user_info.nickname, user_info.readerid, user_info.readergrade, result.balance])
+            print(table)
             return True
 
 

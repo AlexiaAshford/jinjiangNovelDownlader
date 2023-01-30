@@ -6,25 +6,12 @@ import database
 from instance import *
 from tqdm import tqdm
 from prettytable import PrettyTable
-from lib import get_book_id_by_url
+from lib import get_book_id_by_url, parse_args
 
 from concurrent.futures import ThreadPoolExecutor
 
 
-def shell_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--download", nargs=1, default=None, help="please input book_id")
-    parser.add_argument("-s", "--search", dest="search", nargs=1, default=None, help="search book by book name")
-    parser.add_argument("--token", default=None, help="add token")
-    parser.add_argument("--max", default=32, help="please input max threading")
-    parser.add_argument("--update", default=False, action="store_true", help="update books")
-    parser.add_argument("--login", default=None, nargs="+", help="login account")
-    parser.add_argument("--epub", default=True, action="store_true", help="output epub file")
-    parser.add_argument("--output", default="downloads", nargs="?", help="output epub file")
-    parser.add_argument("--cache", default="cache", nargs="?", help="output epub file")
-    parser.add_argument("--update_database", default=False, action="store_true", help="update database")
-
-    Vars.current_command = parser.parse_args()
+def shell_command():
     if Vars.current_command.token:
         Vars.cfg.data['token'] = Vars.current_command.token
         Vars.cfg.save()
@@ -176,9 +163,9 @@ def login_account(username: str, password: str):
 
 if __name__ == '__main__':
     set_config()
+    # init command line arguments.
+    Vars.current_command = parse_args()
     if not src.Account.user_center():
         print("[err]test your account failed, please input your valid token.")
-    try:
-        shell_parser()
-    except KeyboardInterrupt:
-        print("\n exit program by keyboard interrupt")
+
+    shell_command()

@@ -26,19 +26,19 @@ def search_home_page(response: dict) -> [dict, None]:  # search book by keyword
 
 
 @GET("getUserCenter")
-def get_user_center(response: dict) -> [dict, None]:
-    if not response.get("message"):
-        return response
-    else:
-        print("[err]get user info failed:", response.get("message"))
+def get_user_center(response: dict) -> template.UserCenter:
+    user_center = template.UserCenter(**response)
+    if not user_center.message:
+        return user_center
+    print("[err]get user info failed:", user_center.message)
 
 
 @GET("getAppUserinfo")
-def get_user_info(response: dict) -> [dict, None]:
-    if not response.get("message"):
-        return response
-    else:
-        print("get user info failed:", response.get("message"))
+def get_user_info(response: dict) -> template.UserInfo:
+    user_info = template.UserInfo(**response)
+    if not user_info.message:
+        return user_info
+    print("get user info failed:", user_info.message)
 
 
 @GET("search")
