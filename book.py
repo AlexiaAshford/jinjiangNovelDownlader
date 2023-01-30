@@ -1,3 +1,5 @@
+import database
+import lib
 import src
 import template
 import threading
@@ -32,17 +34,26 @@ class Book:
 
     def download_content(self, chapter_info: template.ChapterInfo, pbar):
         pbar.update(1)
-        if chapter_info.isvip == 0:
-            message = src.Chapter.chapter_free_content(self.book_info.novelId, chapter_info.chapterid)
-            if isinstance(message, str):
-                self.download_failed_list.append([chapter_info, message])
-        elif chapter_info.isvip == 2:
-            if not Vars.cfg.data.get("token"):
-                self.download_failed_list.append([chapter_info, "未登录,无法下载vip章节"])
-            else:
-                message = src.Chapter.chapter_vip_content(self.book_info.novelId, chapter_info.chapterid)
-                if isinstance(message, str):
-                    self.download_failed_list.append([chapter_info, message])
+        response = src.Chapter.chapter_content(self.book_info.novelId, chapter_info.chapterid, chapter_info.isvip)
+        if isinstance(response, template.ContentInfo):
+            if chapter_info.isvip == 2:
+                response.content = lib.decode.decrypt(response.content, token=True)
+            if response.content:
+                max_id = database.session.query(database.func.max(database.ChapterInfoSql.id)).scalar()
+                if max_id is None:
+                    max_id = 0
+                database.session.add(
+                    database.ChapterInfoSql(
+                        id=max_id + 1,
+                        novel_id=chapter_info.novelid,
+                        chapter_id=chapter_info.chapterid,
+                        chapter_name=chapter_info.chaptername,
+                        chapter_content=lib.encrypt_aes(response.content)
+                    )
+                )
+            self.download_successful_list.append([chapter_info, response])
+        elif isinstance(response, str):
+            self.download_failed_list.append([chapter_info, response])
         else:
             print("chapter is not free or vip, log:{}".format(chapter_info.isvip))
 

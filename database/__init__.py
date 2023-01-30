@@ -1,9 +1,8 @@
 from pydantic import typing
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
-
 Base = declarative_base()
 # check_same_thread:False 允许多线程 
 engine = create_engine('sqlite:///jinjiang.db', connect_args={'check_same_thread': False})
@@ -62,7 +61,8 @@ class BookInfoSql(Base):
 
 class ChapterInfoSql(Base):
     __tablename__ = 'chapterinfo'
-    chapter_id: typing.Optional[str] = Column(String, primary_key=True)
+    id: typing.Optional[str] = Column(Integer, primary_key=True)
+    chapter_id: typing.Optional[str] = Column(String)
     novel_id: typing.Optional[str] = Column(Integer)
     chapter_name: typing.Optional[str] = Column(String)
     chapter_content: typing.Optional[str] = Column(String)

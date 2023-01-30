@@ -84,12 +84,12 @@ def download_chapter(book_info):
     get_chapter_list = src.Book.get_chapter_list(book_info.novelId)
     if get_chapter_list is not None:
         new_tqdm = tqdm(total=len(get_chapter_list), desc="下载进度", ncols=100)
-        # with ThreadPoolExecutor(max_workers=Vars.current_command.max) as executor:
-        #     for chapter in get_chapter_list:  # type: template.ChapterInfo
-        #         executor.submit(current_book_obj.download_content, chapter, new_tqdm)
+        with ThreadPoolExecutor(max_workers=Vars.current_command.max) as executor:
+            for chapter in get_chapter_list:  # type: template.ChapterInfo
+                executor.submit(current_book_obj.download_content, chapter, new_tqdm)
 
-        for chapter in get_chapter_list:  # type: template.ChapterInfo
-            current_book_obj.download_content(chapter, new_tqdm)
+        # for chapter in get_chapter_list:  # type: template.ChapterInfo
+        #     current_book_obj.download_content(chapter, new_tqdm)
         # time.sleep(1)  # wait for all thread finish.
         new_tqdm.close()
         database.session.commit()

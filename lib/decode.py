@@ -47,11 +47,7 @@ def des_encrypt(string: str, token: str = None, key: str = "KK!%G3JdCHJxpAF3%Vg9
 
 
 if __name__ == '__main__':
-    texts = "3rweewtewgergs是"
-    # ValueError: Data must be aligned to block boundary in ECB mode,处理这个错误
-    texts = texts + (16 - len(texts) % 16) * chr(16 - len(texts) % 16)  # 补位
-    print('texts=\t', texts)
-
+    texts = "本章节已锁定"
     print('texts=\t', encrypt_aes(texts))
     print('decrypt,key=\t', decrypt_aes(encrypt_aes(texts)))
     # print('encrypt,key=\t', encrypt_aes(texts))

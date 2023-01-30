@@ -13,7 +13,10 @@ def request(method, host, path):
     def decorator(func):
         def wrapper(params):
             response = requests.request(method=method, url=host + path, params=params, headers=headers)
-            return func(response.json())
+            try:
+                return func(response.json())
+            except Exception as e:
+                print("request failed:", e, "url:", response.url, "\tres:", response.text)
 
         return wrapper
 

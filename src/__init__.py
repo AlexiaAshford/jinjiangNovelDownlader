@@ -38,52 +38,48 @@ class Account:
 
 class Chapter:
     @staticmethod
-    def chapter_vip_content(novel_id: str, chapter_id) -> str:  # get chapter list by novel_id
-        response = get_chapter_vip_content(params={
-            "novelId": novel_id,
-            "chapterId": chapter_id,
-            "versionCode": Vars.cfg.data['versionCode'],
-            "readState": "readahead",
-            "updateTime": int(time.time()),
-            "token": Vars.cfg.data.get("token")
-        })
+    def chapter_content(novel_id: str, chapter_id, isvip):  # get chapter list by novel_id
+        if isvip == 2:
+            if not Vars.cfg.data.get("token"):
+                return "未登录,无法下载vip章节"
+            response = get_chapter_vip_content(params={
+                "novelId": novel_id,
+                "chapterId": chapter_id,
+                "versionCode": Vars.cfg.data['versionCode'],
+                "readState": "readahead",
+                "updateTime": int(time.time()),
+                "token": Vars.cfg.data.get("token")
+            })
+        else:
+            response = get_chapter_free_content(params={"novelId": novel_id, "chapterId": chapter_id})
         if response is None:
             return "程序错误,下载失败"
         if response.get("message") is None:
 
-            content_info = template.ContentInfo(**response)
-            content_info.content = decode.decrypt(content_info.content, token=True)
-            if content_info.content:
-                database.session.add(
-                    database.ChapterInfoSql(
-                        novel_id=novel_id,
-                        chapter_id=chapter_id,
-                        chapter_name=content_info.chapterName,
-                        chapter_content=lib.encrypt_aes(content_info.content)
-                    )
-                )
+            return template.ContentInfo(**response)
         else:
             return response.get("message")
 
     @staticmethod
-    def chapter_free_content(novel_id: str, chapter_id) -> str:
+    def chapter_free_content(novel_id: str, chapter_id):
         response = get_chapter_free_content(params={"novelId": novel_id, "chapterId": chapter_id})
         if response is None:
             return "程序错误,下载失败"
         if response.get("message") is None:
-            content_info = template.ContentInfo(**response)  # create content info
-            if content_info.content:
-                database.session.add(
-                    database.ChapterInfoSql(
-                        novel_id=novel_id,
-                        chapter_id=chapter_id,
-                        chapter_name=content_info.chapterName,
-                        chapter_content=lib.encrypt_aes(content_info.content)
-                    )
-                )
-                # with open(cache_file_path, "w", encoding="utf-8") as f:
-                #     f.write(content_info.chapterName + "\n")
-                #     [f.write(i + "\n") for i in content_info.content.split("\n") if i.strip() != ""]
+            return template.ContentInfo(**response)
+            # content_info = template.ContentInfo(**response)  # create content info
+            # if content_info.content:
+            #     database.session.add(
+            #         database.ChapterInfoSql(
+            #             novel_id=novel_id,
+            #             chapter_id=chapter_id,
+            #             chapter_name=content_info.chapterName,
+            #             chapter_content=lib.encrypt_aes(content_info.content)
+            #         )
+            #     )
+            # with open(cache_file_path, "w", encoding="utf-8") as f:
+            #     f.write(content_info.chapterName + "\n")
+            #     [f.write(i + "\n") for i in content_info.content.split("\n") if i.strip() != ""]
         else:
             return response.get("message")
 
