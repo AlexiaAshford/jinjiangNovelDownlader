@@ -1,6 +1,6 @@
 import random
 import time
-
+import database
 from .API import *
 from lib import decode
 from prettytable import PrettyTable
@@ -51,9 +51,18 @@ class Chapter:
         if response.get("message") is None:
             content_info = template.ContentInfo(**response)
             content_info.content = decode.decrypt(content_info.content, token=True)
-            with open(cache_file_path, "w", encoding="utf-8") as f:
-                f.write(content_info.chapterName + "\n")
-                [f.write(i + "\n") for i in content_info.content.split("\n") if i.strip() != ""]
+            if content_info.content:
+                database.session.add(
+                    database.ChapterInfoSql(
+                        novel_id=novel_id,
+                        chapter_id=chapter_id,
+                        chapter_name=content_info.chapterName,
+                        chapter_content='\n'.join([i for i in content_info.content.split("\n") if i.strip() != ""])
+                    )
+                )
+                with open(cache_file_path, "w", encoding="utf-8") as f:
+                    f.write(content_info.chapterName + "\n")
+                    [f.write(i + "\n") for i in content_info.content.split("\n") if i.strip() != ""]
         else:
             return response.get("message")
 
@@ -65,6 +74,14 @@ class Chapter:
         if response.get("message") is None:
             content_info = template.ContentInfo(**response)  # create content info
             if content_info.content:
+                database.session.add(
+                    database.ChapterInfoSql(
+                        novel_id=novel_id,
+                        chapter_id=chapter_id,
+                        chapter_name=content_info.chapterName,
+                        chapter_content='\n'.join([i for i in content_info.content.split("\n") if i.strip() != ""])
+                    )
+                )
                 with open(cache_file_path, "w", encoding="utf-8") as f:
                     f.write(content_info.chapterName + "\n")
                     [f.write(i + "\n") for i in content_info.content.split("\n") if i.strip() != ""]
