@@ -46,7 +46,7 @@ class Book:
                 md5.update(chapter_info.chaptername.encode('utf-8') + chapter_info.novelid.encode('utf-8'))
 
                 database.session.add(
-                    database.ChapterInfoSql(
+                    database.ChapterSql(
                         id=md5.hexdigest(),
                         novelId=chapter_info.novelid,
                         chapterid=chapter_info.chapterid,

@@ -28,7 +28,7 @@ class CheckJson:
 
 
 class CheckJsonAndAddModel:
-    def __init__(self, models):
+    def __init__(self, models=None):
         self.models = models
 
     def __call__(self, func):
@@ -36,8 +36,9 @@ class CheckJsonAndAddModel:
             json, url = func(*args, **kwargs)
             if json.get("message"):
                 return print("message:", json.get("message"), "\t\turl:", url)
-
-            return self.models(**json)
+            if self.models:
+                return self.models(**json)
+            return json
 
         return wrapper
 

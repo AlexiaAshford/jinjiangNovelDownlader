@@ -1,7 +1,7 @@
 import template
-from lib import GET, CheckJsonAndAddModel
 from rich import print
 from . import UrlConstant
+from lib import GET, CheckJsonAndAddModel
 
 
 @CheckJsonAndAddModel(template.BookInfo)
@@ -18,20 +18,16 @@ def search_home_page(response: dict) -> [dict, None]:  # search book by keyword
         print("search failed:", response.get("message"))
 
 
+@CheckJsonAndAddModel(template.UserCenter)
 @GET("getUserCenter")
-def get_user_center(response: dict) -> template.UserCenter:
-    user_center = template.UserCenter(**response)
-    if not user_center.message:
-        return user_center
-    print("[err]get user info failed:", user_center.message)
+def get_user_center(response: dict):
+    return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
 
+@CheckJsonAndAddModel(template.UserInfo)
 @GET("getAppUserinfo")
-def get_user_info(response: dict) -> template.UserInfo:
-    user_info = template.UserInfo(**response)
-    if not user_info.message:
-        return user_info
-    print("get user info failed:", user_info.message)
+def get_user_info(response: dict):
+    return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
 
 @GET("search")
@@ -49,12 +45,10 @@ def search_book(response: dict):  # search book by keyword
     return novel_info_list
 
 
+@CheckJsonAndAddModel()
 @GET(UrlConstant.CHAPTER_LIST)
 def get_chapter_list(response):  # get chapter list by novel_id
-    if response.get("message"):
-        print("get chapter list failed, please try again.", response.get("message"))
-    else:
-        return response['chapterlist']
+    return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
 
 @GET("chapterContent")

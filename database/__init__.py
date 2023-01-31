@@ -59,7 +59,7 @@ class BookInfoSql(Base):
     copystatus: typing.Optional[str] = Column(String)
 
 
-class ChapterInfoSql(Base):
+class ChapterSql(Base):
     __tablename__ = 'chapterinfo'
     id: typing.Optional[str] = Column(String, primary_key=True)
     chapterid: typing.Optional[str] = Column(String)

@@ -93,8 +93,8 @@ class Book:
     def get_chapter_list(novel_id: str):
         download_content = []
         chapter_list = get_chapter_list(params={"novelId": novel_id, "more": 0, "whole": 1})
-        if chapter_list:
-            for chapter in chapter_list:
+        if chapter_list.get("chapterlist"):
+            for chapter in chapter_list['chapterlist']:
                 chap_info = template.ChapterInfo(**chapter)
                 chap_info.chaptername = re.sub(r'[\\/:*?"<>|]', '', chap_info.chaptername)
                 # chap_info.cache_file_path = os.path.join(Vars.current_command.cache,
@@ -102,9 +102,9 @@ class Book:
                 #                                          chap_info.chapterid + "-" +
                 #                                          chap_info.chaptername + ".txt"
                 #                                          )
-                if not database.session.query(database.ChapterInfoSql).filter(
-                        database.ChapterInfoSql.novelId == chap_info.novelid,
-                        database.ChapterInfoSql.chapterid == chap_info.chapterid).first():
+                if not database.session.query(database.ChapterSql).filter(
+                        database.ChapterSql.novelId == chap_info.novelid,
+                        database.ChapterSql.chapterid == chap_info.chapterid).first():
                     download_content.append(chap_info)
                 # if not os.path.exists(chap_info.cache_file_path):
                 #     download_content.append(chap_info)

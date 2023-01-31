@@ -84,12 +84,12 @@ def download_chapter(book_info):
     get_chapter_list = src.Book.get_chapter_list(book_info.novelId)
     if get_chapter_list is not None:
         new_tqdm = tqdm(total=len(get_chapter_list), desc="下载进度", ncols=100)
-        with ThreadPoolExecutor(max_workers=Vars.current_command.max) as executor:
-            for chapter in get_chapter_list:  # type: template.ChapterInfo
-                executor.submit(current_book_obj.download_content, chapter, new_tqdm)
+        # with ThreadPoolExecutor(max_workers=Vars.current_command.max) as executor:
+        #     for chapter in get_chapter_list:  # type: template.ChapterInfo
+        #         executor.submit(current_book_obj.download_content, chapter, new_tqdm)
 
-        # for chapter in get_chapter_list:  # type: template.ChapterInfo
-        #     current_book_obj.download_content(chapter, new_tqdm)
+        for chapter in get_chapter_list:  # type: template.ChapterInfo
+            current_book_obj.download_content(chapter, new_tqdm)
         # time.sleep(1)  # wait for all thread finish.
         new_tqdm.close()
         try:
@@ -118,13 +118,13 @@ def download_chapter(book_info):
 
 
 def output_text_and_epub_file(book_info):
-    chapter_list = database.session.query(database.ChapterInfoSql).filter(
-        database.ChapterInfoSql.novelId == book_info.novelId).all()
+    chapter_list = database.session.query(database.ChapterSql).filter(
+        database.ChapterSql.novelId == book_info.novelId).all()
 
     chapter_list.sort(key=lambda x: int(x.chapterid))  # sort chapter list by chapter id number.
     with open(f"{Vars.current_command.output}/{book_info.novelName}/{book_info.novelName}.txt", "a",
               encoding="utf-8") as f2:
-        for chapter in chapter_list:  # type: database.ChapterInfoSql
+        for chapter in chapter_list:  # type: database.ChapterSql
             chapter_name = f"\n\n\n第{chapter.chapterid}章: " + chapter.chapter_name
             # print(chapter.chapter_content)
             f2.write(chapter_name + "\n\n" + lib.decrypt_aes(chapter.chapter_content))
