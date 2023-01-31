@@ -36,9 +36,11 @@ class Book:
         pbar.update(1)
         response = src.Chapter.chapter_content(self.book_info.novelId, chapter_info.chapterid, chapter_info.isvip)
         if isinstance(response, template.ContentInfo):
-            if chapter_info.isvip == 2:
-                response.content = lib.decode.decrypt(response.content, token=True)
+            # if chapter_info.isvip == 2:
+            #     response.content = lib.decode.decrypt(response.content, token=True)
+
             if response.content:
+                response.content = lib.decode.decrypt(response.content, token=True)
                 # max_id = database.session.query(database.func.max(database.ChapterInfoSql.id)).scalar()
                 # if max_id is None:
                 #     max_id = 0

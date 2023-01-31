@@ -49,6 +49,6 @@ def des_encrypt(string: str, token: str = None, key: str = "KK!%G3JdCHJxpAF3%Vg9
 if __name__ == '__main__':
     texts = "本章节已锁定"
     print('texts=\t', encrypt_aes(texts))
-    print('decrypt,key=\t', decrypt_aes(encrypt_aes(texts)))
-    # print('encrypt,key=\t', encrypt_aes(texts))
+
+    print('encrypt,key=\t', encrypt_aes(texts))
     # print('decrypt,key=\t', decrypt_aes("Di6iQFdKcA8+Q+iNeORyIQ==".encode('utf-8')))

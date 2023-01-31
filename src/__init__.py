@@ -85,13 +85,6 @@ class Book:
                         database.ChapterSql.novelId == chap_info.novelid,
                         database.ChapterSql.chapterid == chap_info.chapterid).first():
                     download_content.append(chap_info)
-                # if not os.path.exists(chap_info.cache_file_path):
-                #     download_content.append(chap_info)
-                # if chap_info.originalPrice == 0:
-                #     download_content.append(chap_info)
-                # else:
-                #     if Vars.cfg.data.get("token"):
-                #         download_content.append(chap_info)
         return download_content
 
     @staticmethod
