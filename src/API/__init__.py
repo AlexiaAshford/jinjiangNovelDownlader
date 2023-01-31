@@ -1,7 +1,7 @@
 import template
 from rich import print
 from . import UrlConstant
-from lib import GET, CheckJsonAndAddModel
+from lib import GET, CheckJsonAndAddModel, CheckJson
 
 
 @CheckJsonAndAddModel(template.BookInfo)
@@ -45,7 +45,7 @@ def search_book(response: dict):  # search book by keyword
     return novel_info_list
 
 
-@CheckJsonAndAddModel()
+@CheckJson
 @GET(UrlConstant.CHAPTER_LIST)
 def get_chapter_list(response):  # get chapter list by novel_id
     return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
