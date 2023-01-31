@@ -1,22 +1,13 @@
-import os
-import re
-
-import database
 import template
-from lib import GET
-from tqdm import tqdm
+from lib import GET, CheckJsonAndAddModel
 from rich import print
 from . import UrlConstant
-from instance import Vars
 
 
+@CheckJsonAndAddModel(template.BookInfo)
 @GET(UrlConstant.NOVEL_INFO)
-def novel_basic_info(response: dict) -> template.BookInfo:  # get book information by novel_id
-    if response.get("message") is None:  # get book information success then print book information.
-        return template.BookInfo(**response)  # create book object from book information.
-        # print book information with book detail.
-    else:
-        print("get book information failed, please try again.", response.get("message"))
+def novel_basic_info(response: dict):  # get book information by novel_id
+    return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
 
 @GET(UrlConstant.SEARCH_INFO)

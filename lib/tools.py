@@ -15,24 +15,36 @@ def get_book_id_by_url():
     return wrapper
 
 
-# 使用类装饰器检测dict数据是否存在message字段
-
 class CheckJson:
     def __init__(self, func):
         self.func = func
 
     def __call__(self, *args, **kwargs):
-        json = self.func(*args, **kwargs)
+        json, url = self.func(*args, **kwargs)
         if json.get("message"):
-            print(json.get("message"))
+            print("message:", json.get("message"), "\t\turl:", url)
             return
         return json
+
+
+class CheckJsonAndAddModel:
+    def __init__(self, models):
+        self.models = models
+
+    def __call__(self, func):
+        def wrapper(*args, **kwargs):
+            json, url = func(*args, **kwargs)
+            if json.get("message"):
+                return print("message:", json.get("message"), "\t\turl:", url)
+
+            return self.models(**json)
+
+        return wrapper
 
 
 @CheckJson
 def get_json():
     return {"message": "errofegergrgr"}
-
 
 # if __name__ == '__main__':
 #     print(get_json())

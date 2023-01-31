@@ -1,7 +1,7 @@
-import base64
 import random
 import time
-import lib
+import database
+from instance import *
 from .API import *
 from lib import decode
 from prettytable import PrettyTable
