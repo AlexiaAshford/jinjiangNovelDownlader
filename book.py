@@ -48,8 +48,8 @@ class Book:
                 database.session.add(
                     database.ChapterInfoSql(
                         id=md5.hexdigest(),
-                        novel_id=chapter_info.novelid,
-                        chapter_id=chapter_info.chapterid,
+                        novelId=chapter_info.novelid,
+                        chapterid=chapter_info.chapterid,
                         chapter_name=chapter_info.chaptername,
                         chapter_content=lib.encrypt_aes(response.content)
                     )
@@ -58,6 +58,7 @@ class Book:
         elif isinstance(response, str):
             self.download_failed_list.append([chapter_info, response])
         else:
+
             print("chapter is not free or vip, log:{}".format(chapter_info.isvip))
 
     # def set_downloaded_book_id_in_list(self):

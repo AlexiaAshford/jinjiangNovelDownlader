@@ -90,8 +90,30 @@ class Book:
         return novel_basic_info(params={"novelId": novel_id})
 
     @staticmethod
-    def get_chapter_list(novel_id: str) -> dict:
-        return get_chapter_list(params={"novelId": novel_id, "more": 0, "whole": 1})
+    def get_chapter_list(novel_id: str):
+        download_content = []
+        chapter_list = get_chapter_list(params={"novelId": novel_id, "more": 0, "whole": 1})
+        if chapter_list:
+            for chapter in chapter_list:
+                chap_info = template.ChapterInfo(**chapter)
+                chap_info.chaptername = re.sub(r'[\\/:*?"<>|]', '', chap_info.chaptername)
+                # chap_info.cache_file_path = os.path.join(Vars.current_command.cache,
+                #                                          chap_info.novelid + "-" +
+                #                                          chap_info.chapterid + "-" +
+                #                                          chap_info.chaptername + ".txt"
+                #                                          )
+                if not database.session.query(database.ChapterInfoSql).filter(
+                        database.ChapterInfoSql.novelId == chap_info.novelid,
+                        database.ChapterInfoSql.chapterid == chap_info.chapterid).first():
+                    download_content.append(chap_info)
+                # if not os.path.exists(chap_info.cache_file_path):
+                #     download_content.append(chap_info)
+                # if chap_info.originalPrice == 0:
+                #     download_content.append(chap_info)
+                # else:
+                #     if Vars.cfg.data.get("token"):
+                #         download_content.append(chap_info)
+        return download_content
 
     @staticmethod
     def search_info(keyword: str, page: int = 0) -> [dict, None]:  # search book by keyword

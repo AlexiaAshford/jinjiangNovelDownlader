@@ -119,13 +119,13 @@ def download_chapter(book_info):
 
 def output_text_and_epub_file(book_info):
     chapter_list = database.session.query(database.ChapterInfoSql).filter(
-        database.ChapterInfoSql.novel_id == book_info.novelId).all()
+        database.ChapterInfoSql.novelId == book_info.novelId).all()
 
-    chapter_list.sort(key=lambda x: int(x.chapter_id))  # sort chapter list by chapter id number.
+    chapter_list.sort(key=lambda x: int(x.chapterid))  # sort chapter list by chapter id number.
     with open(f"{Vars.current_command.output}/{book_info.novelName}/{book_info.novelName}.txt", "a",
               encoding="utf-8") as f2:
         for chapter in chapter_list:  # type: database.ChapterInfoSql
-            chapter_name = f"\n\n\n第{chapter.chapter_id}章: " + chapter.chapter_name
+            chapter_name = f"\n\n\n第{chapter.chapterid}章: " + chapter.chapter_name
             # print(chapter.chapter_content)
             f2.write(chapter_name + "\n\n" + lib.decrypt_aes(chapter.chapter_content))
 
@@ -180,7 +180,7 @@ if __name__ == '__main__':
     set_config()
     # init command line arguments.
     Vars.current_command = parse_args()
-    database.session.execute("CREATE INDEX IF NOT EXISTS chapter_index ON chapterinfo (novel_id);")
+    database.session.execute("CREATE INDEX IF NOT EXISTS chapter_index ON chapterinfo (novelId);")
     if not src.Account.user_center():
         print("[err]test your account failed, please input your valid token.")
 

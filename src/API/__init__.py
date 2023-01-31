@@ -62,28 +62,8 @@ def search_book(response: dict):  # search book by keyword
 def get_chapter_list(response):  # get chapter list by novel_id
     if response.get("message"):
         print("get chapter list failed, please try again.", response.get("message"))
-        return None
-    download_content = []
-    for chapter in response['chapterlist']:
-        chap_info = template.ChapterInfo(**chapter)
-        chap_info.chaptername = re.sub(r'[\\/:*?"<>|]', '', chap_info.chaptername)
-        # chap_info.cache_file_path = os.path.join(Vars.current_command.cache,
-        #                                          chap_info.novelid + "-" +
-        #                                          chap_info.chapterid + "-" +
-        #                                          chap_info.chaptername + ".txt"
-        #                                          )
-        if not database.session.query(database.ChapterInfoSql).filter(
-                database.ChapterInfoSql.novel_id == chap_info.novelid,
-                database.ChapterInfoSql.chapter_id == chap_info.chapterid).first():
-            download_content.append(chap_info)
-        # if not os.path.exists(chap_info.cache_file_path):
-        #     download_content.append(chap_info)
-        # if chap_info.originalPrice == 0:
-        #     download_content.append(chap_info)
-        # else:
-        #     if Vars.cfg.data.get("token"):
-        #         download_content.append(chap_info)
-    return download_content
+    else:
+        return response['chapterlist']
 
 
 @GET("chapterContent")
