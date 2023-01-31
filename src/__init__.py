@@ -12,7 +12,6 @@ class Account:
     def login(username: str, password: str):
         identifiers = ''.join(random.choice("0123456789") for _ in range(18)) + ":null:null"
         params = {
-            "versionCode": 206,
             "loginName": username,
             "encode": 1,
             "loginPassword": decode.des_encrypt(password),
@@ -25,10 +24,9 @@ class Account:
 
     @staticmethod
     def user_center():
-        params = {"versionCode": Vars.cfg.data['versionCode'], "token": Vars.cfg.data.get("token")}
-        result = get_user_center(params=params)
+        result = get_user_center(params=None)
         if result:
-            user_info = get_user_info(params=params)
+            user_info = get_user_info(params=None)
             table = PrettyTable()
             table.field_names = ["名称", "序号", "等级", "余额"]
             table.add_row([user_info.nickname, user_info.readerid, user_info.readergrade, result.balance])
@@ -45,10 +43,8 @@ class Chapter:
             response = get_chapter_vip_content(params={
                 "novelId": novel_id,
                 "chapterId": chapter_id,
-                "versionCode": Vars.cfg.data['versionCode'],
                 "readState": "readahead",
                 "updateTime": int(time.time()),
-                "token": Vars.cfg.data.get("token")
             })
         else:
             response = get_chapter_free_content(params={"novelId": novel_id, "chapterId": chapter_id})
@@ -67,19 +63,6 @@ class Chapter:
             return "程序错误,下载失败"
         if response.get("message") is None:
             return template.ContentInfo(**response)
-            # content_info = template.ContentInfo(**response)  # create content info
-            # if content_info.content:
-            #     database.session.add(
-            #         database.ChapterInfoSql(
-            #             novel_id=novel_id,
-            #             chapter_id=chapter_id,
-            #             chapter_name=content_info.chapterName,
-            #             chapter_content=lib.encrypt_aes(content_info.content)
-            #         )
-            #     )
-            # with open(cache_file_path, "w", encoding="utf-8") as f:
-            #     f.write(content_info.chapterName + "\n")
-            #     [f.write(i + "\n") for i in content_info.content.split("\n") if i.strip() != ""]
         else:
             return response.get("message")
 
@@ -115,8 +98,7 @@ class Book:
     def search_info(keyword: str, page: int = 0) -> [dict, None]:  # search book by keyword
         search_recommend = []
         if page == 1:
-            params = {"keyword": keyword, "versionCode": Vars.cfg.data['versionCode'], "type": 1}
-            for i in search_home_page(params=params):
+            for i in search_home_page(params={"keyword": keyword, "type": 1}):
                 search_recommend.append(template.SearchInfo(
                     novelid=i.get("novelId"),
                     novelname=i.get("novelName"),
@@ -129,9 +111,6 @@ class Book:
             "pageSize": 20,
             "searchType": 8,
             "sortMode": "DESC",
-            "token": Vars.cfg.data.get("token"),
-            "versionCode": Vars.cfg.data['versionCode']
-
         })
         if search_recommend:
             for i in search_recommend[::-1]:

@@ -1,4 +1,5 @@
 import requests
+from instance import *
 from functools import wraps
 
 headers = {
@@ -8,11 +9,22 @@ headers = {
 }
 
 
+def set_params(params):
+    default_params = {
+        "token": Vars.cfg.data.get("token"),
+        "versionCode": Vars.cfg.data['versionCode']
+    }
+    if params:
+        default_params.update(params)
+    return default_params
+
+
 def request(method, host, path):
     @wraps(request)
     def decorator(func):
+
         def wrapper(params):
-            response = requests.request(method=method, url=host + path, params=params, headers=headers)
+            response = requests.request(method=method, url=host + path, params=set_params(params), headers=headers)
             try:
                 return func(response.json())
             except Exception as e:
