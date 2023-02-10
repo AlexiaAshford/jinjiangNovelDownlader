@@ -9,4 +9,7 @@ sqlite_name = "jinjiang.db"
 engine = create_engine('sqlite:///{}'.format(sqlite_name), connect_args={'check_same_thread': check_same_thread})
 
 Base.metadata.create_all(engine)
-session = sessionmaker(bind=engine)()
+Session = sessionmaker(bind=engine)
+session = Session()
+
+__all__ = ["session", "ChapterSql", "BookInfoSql", "CoverSql"]

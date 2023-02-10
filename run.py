@@ -96,10 +96,13 @@ def download_chapter(book_info):
             database.session.rollback()
         print("一共 {} 章下载失败".format(len(current_book_obj.download_failed_list)))
         table = PrettyTable(['序号', '章节名', '是否上架', '错误原因'])
+        add_row_list = []
         for failed_chapter in current_book_obj.download_failed_list:
-            table.add_row([failed_chapter[0].chapterid, failed_chapter[0].chaptername,
-                           "免费" if failed_chapter[0].isvip == 0 else "付费",
-                           failed_chapter[1]])
+            add_row_list.append([failed_chapter[0].chapterid, failed_chapter[0].chaptername,
+                                 "免费" if failed_chapter[0].isvip == 0 else "付费", failed_chapter[1]])
+        add_row_list.sort(key=lambda x: int(x[0]))
+        for row in add_row_list:
+            table.add_row(row)
         print(table)
         return current_book_obj
 

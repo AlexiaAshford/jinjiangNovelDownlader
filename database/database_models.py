@@ -58,11 +58,11 @@ class BookInfoSql(Base):
 
 class ChapterSql(Base):
     __tablename__ = 'chapterinfo'
-    id: typing.Optional[str] = Column(String, primary_key=True)
+    id: typing.Optional[str] = Column(Integer, primary_key=True, autoincrement=True)
     chapterid: typing.Optional[str] = Column(String)
-    novelId: typing.Optional[str] = Column(Integer)
-    chapter_name: typing.Optional[str] = Column(String)
-    chapter_content: typing.Optional[str] = Column(String)
+    novelId: typing.Optional[str] = Column(Integer, nullable=True)
+    chapter_name: typing.Optional[str] = Column(String, nullable=True)
+    chapter_content: typing.Optional[str] = Column(String, nullable=True)
 
 
 class CoverSql(Base):

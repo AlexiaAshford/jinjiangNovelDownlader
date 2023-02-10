@@ -41,15 +41,8 @@ class Book:
 
             if response.content:
                 response.content = lib.decode.decrypt(response.content, token=True)
-                # max_id = database.session.query(database.func.max(database.ChapterInfoSql.id)).scalar()
-                # if max_id is None:
-                #     max_id = 0
-                md5 = hashlib.md5()
-                md5.update(chapter_info.chaptername.encode('utf-8') + chapter_info.novelid.encode('utf-8'))
-
                 database.session.add(
                     database.ChapterSql(
-                        id=md5.hexdigest(),
                         novelId=chapter_info.novelid,
                         chapterid=chapter_info.chapterid,
                         chapter_name=chapter_info.chaptername,
