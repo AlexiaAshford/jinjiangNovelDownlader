@@ -9,19 +9,19 @@ from lib import GET, CheckJsonAndAddModel, CheckJson
 # def novel_basic_info(response: dict):  # get book information by novel_id
 #     return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
+#
+# @GET(UrlConstant.SEARCH_INFO)
+# def search_home_page(response: dict) -> [dict, None]:  # search book by keyword
+#     if response.get("code") == '200':
+#         return response.get("data")
+#     else:
+#         print("search failed:", response.get("message"))
 
-@GET(UrlConstant.SEARCH_INFO)
-def search_home_page(response: dict) -> [dict, None]:  # search book by keyword
-    if response.get("code") == '200':
-        return response.get("data")
-    else:
-        print("search failed:", response.get("message"))
 
-
-@CheckJsonAndAddModel(template.UserCenter)
-@GET("getUserCenter")
-def get_user_center(response: dict):
-    return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
+# @CheckJsonAndAddModel(template.UserCenter)
+# @GET("getUserCenter")
+# def get_user_center(response: dict):
+#     return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
 
 @CheckJsonAndAddModel(template.UserInfo)

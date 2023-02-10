@@ -24,6 +24,11 @@ class Account:
 
     @staticmethod
     def user_center():
+        @CheckJsonAndAddModel(template.UserCenter)
+        @GET("getUserCenter")
+        def get_user_center(response: dict):
+            return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
+
         result = get_user_center(params=None)
         if result:
             user_info = get_user_info(params=None)
@@ -74,6 +79,7 @@ class Book:
         @GET(UrlConstant.NOVEL_INFO)
         def novel_basic_info(response: dict):  # get book information by novel_id
             return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
+
         return novel_basic_info(params={"novelId": novel_id})
 
     @staticmethod
@@ -95,6 +101,13 @@ class Book:
     def search_info(keyword: str, page: int = 0) -> [dict, None]:  # search book by keyword
         search_recommend = []
         if page == 1:
+            @GET(UrlConstant.SEARCH_INFO)
+            def search_home_page(response: dict) -> [dict, None]:  # search book by keyword
+                if response.get("code") == '200':
+                    return response.get("data")
+                else:
+                    print("search failed:", response.get("message"))
+
             for i in search_home_page(params={"keyword": keyword, "type": 1}):
                 search_recommend.append(template.SearchInfo(
                     novelid=i.get("novelId"),
