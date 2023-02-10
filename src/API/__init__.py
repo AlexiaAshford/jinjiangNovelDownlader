@@ -24,10 +24,10 @@ from lib import GET, CheckJsonAndAddModel, CheckJson
 #     return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
 
-@CheckJsonAndAddModel(template.UserInfo)
-@GET("getAppUserinfo")
-def get_user_info(response: dict):
-    return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
+# @CheckJsonAndAddModel(template.UserInfo)
+# @GET("getAppUserinfo")
+# def get_user_info(response: dict):
+#     return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
 
 @GET("search")
@@ -45,10 +45,10 @@ def search_book(response: dict):  # search book by keyword
     return novel_info_list
 
 
-@CheckJson
-@GET(UrlConstant.CHAPTER_LIST)
-def get_chapter_list(response):  # get chapter list by novel_id
-    return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
+# @CheckJson
+# @GET(UrlConstant.CHAPTER_LIST)
+# def get_chapter_list(response):  # get chapter list by novel_id
+#     return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
 
 @GET("chapterContent")

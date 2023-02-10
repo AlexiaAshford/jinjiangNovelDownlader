@@ -31,6 +31,11 @@ class Account:
 
         result = get_user_center(params=None)
         if result:
+            @CheckJsonAndAddModel(template.UserInfo)
+            @GET("getAppUserinfo")
+            def get_user_info(response: dict):
+                return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
+
             user_info = get_user_info(params=None)
             table = PrettyTable()
             table.field_names = ["名称", "序号", "等级", "余额"]
@@ -85,6 +90,12 @@ class Book:
     @staticmethod
     def get_chapter_list(novel_id: str):
         download_content = []
+
+        @CheckJson
+        @GET(UrlConstant.CHAPTER_LIST)
+        def get_chapter_list(response):  # get chapter list by novel_id
+            return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
+
         chapter_list = get_chapter_list(params={"novelId": novel_id, "more": 0, "whole": 1})
         if chapter_list is not None and chapter_list.get("chapterlist"):
             for chapter in chapter_list['chapterlist']:
