@@ -133,9 +133,9 @@ def output_text_and_epub_file(book_info):
 
     if Vars.current_command.epub:
         if os.name == 'nt':
-            os.system(f"epub_windows_x64.exe " + command_line)
+            os.system(f".\\epub\\epub_windows_x64.exe " + command_line)
         elif os.name == 'posix':
-            os.system(f"./epub_linux_x64 " + command_line)
+            os.system(f"epub/epub_linux_x64 " + command_line)
         else:
             print("not support os, please use windows or linux x64,create epub file failed.")
         # epub_book.epub_file_export()
