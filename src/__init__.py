@@ -70,6 +70,10 @@ class Chapter:
 class Book:
     @staticmethod
     def novel_basic_info(novel_id: str) -> template.BookInfo:
+        @CheckJsonAndAddModel(template.BookInfo)
+        @GET(UrlConstant.NOVEL_INFO)
+        def novel_basic_info(response: dict):  # get book information by novel_id
+            return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
         return novel_basic_info(params={"novelId": novel_id})
 
     @staticmethod

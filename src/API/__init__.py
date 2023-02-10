@@ -4,10 +4,10 @@ from . import UrlConstant
 from lib import GET, CheckJsonAndAddModel, CheckJson
 
 
-@CheckJsonAndAddModel(template.BookInfo)
-@GET(UrlConstant.NOVEL_INFO)
-def novel_basic_info(response: dict):  # get book information by novel_id
-    return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
+# @CheckJsonAndAddModel(template.BookInfo)
+# @GET(UrlConstant.NOVEL_INFO)
+# def novel_basic_info(response: dict):  # get book information by novel_id
+#     return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
 
 @GET(UrlConstant.SEARCH_INFO)
