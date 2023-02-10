@@ -1,5 +1,5 @@
 from .req import request
-from .tools import get_book_id_by_url, CheckJson, CheckJsonAndAddModel
+from .tools import GetBookid, CheckJson, CheckJsonAndAddModel
 from .decode import des_encrypt, decrypt, decrypt_aes, encrypt_aes
 from functools import partial
 from .command import parse_args
@@ -13,7 +13,7 @@ __all__ = [
     "POST",
     "PUT",
     "parse_args",
-    "get_book_id_by_url",
+    "GetBookid",
     "CheckJsonAndAddModel",
     "CheckJson",
     "des_encrypt",

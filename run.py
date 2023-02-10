@@ -7,7 +7,7 @@ import database
 from instance import *
 from tqdm import tqdm
 from prettytable import PrettyTable
-from lib import get_book_id_by_url, parse_args
+from lib import GetBookid, parse_args
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -43,7 +43,7 @@ def shell_command():
         shell_get_book_info(Vars.current_command.download[0])
 
 
-@get_book_id_by_url()
+@GetBookid
 def shell_get_book_info(bookid: str):
     filter_info = database.session.query(database.BookInfoSql).filter(database.BookInfoSql.novelId == bookid).first()
     if not filter_info or Vars.current_command.update_database:

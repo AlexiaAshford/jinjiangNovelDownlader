@@ -1,18 +1,16 @@
 import re
 
 
-def get_book_id_by_url():
-    def wrapper(func):
-        def decorator(url: str):
-            result = re.compile(r'(\d+)').findall(str(url))
-            if len(result) > 0 and str(result[0]).isdigit():
-                func(result[0])
-            else:
-                print("[warning] get_id failed", url)
+class GetBookid:
+    def __init__(self, func):
+        self.func = func
 
-        return decorator
-
-    return wrapper
+    def __call__(self, *args, **kwargs):
+        result = re.compile(r'(\d+)').findall(str(args[0]))
+        if len(result) > 0 and str(result[0]).isdigit():
+            return self.func(result[0])
+        else:
+            print("[warning] get_id failed", args[0])
 
 
 class CheckJson:
@@ -56,5 +54,19 @@ def get_json():
 #             print(json.get("message"))
 #             return
 #         return json
+#
+#     return wrapper
+
+
+# def get_book_id_by_url():
+#     def wrapper(func):
+#         def decorator(url: str):
+#             result = re.compile(r'(\d+)').findall(str(url))
+#             if len(result) > 0 and str(result[0]).isdigit():
+#                 func(result[0])
+#             else:
+#                 print("[warning] get_id failed", url)
+#
+#         return decorator
 #
 #     return wrapper
