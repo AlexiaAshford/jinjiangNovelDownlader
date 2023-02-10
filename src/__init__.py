@@ -29,14 +29,14 @@ class Account:
         def get_user_center(response: dict):
             return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
-        result = get_user_center(params=None)
+        result = get_user_center(params=None)  # type: template.UserCenter
         if result:
             @CheckJsonAndAddModel(template.UserInfo)
             @GET("getAppUserinfo")
             def get_user_info(response: dict):
                 return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
-            user_info = get_user_info(params=None)
+            user_info = get_user_info(params=None)  # type: template.UserInfo
             table = PrettyTable()
             table.field_names = ["名称", "序号", "等级", "余额"]
             table.add_row([user_info.nickname, user_info.readerid, user_info.readergrade, result.balance])

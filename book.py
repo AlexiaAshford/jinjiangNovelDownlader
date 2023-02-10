@@ -38,12 +38,12 @@ class Book:
         if isinstance(response, template.ContentInfo):
             # if chapter_info.isvip == 2:
             #     response.content = lib.decode.decrypt(response.content, token=True)
-
             if response.content:
                 response.content = lib.decode.decrypt(response.content, token=True)
                 database.session.add(
                     database.ChapterSql(
                         novelId=chapter_info.novelid,
+                        is_vip=chapter_info.isvip,
                         chapterid=chapter_info.chapterid,
                         chapter_name=chapter_info.chaptername,
                         chapter_content=lib.encrypt_aes(response.content)
