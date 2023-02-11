@@ -47,26 +47,28 @@ class Account:
 
 class Chapter:
     @staticmethod
+    @GET(url_list.chapterContent)
+    def get_chapter_content(response) -> dict:
+        try:
+            return response
+        except Exception as e:
+            print("get_chapter_content error:", e)
+
+    @staticmethod
     def chapter_content(novel_id: str, chapter_id, isvip):  # get chapter list by novel_id
-        @GET(url_list.chapterContent)
-        def get_chapter_content(response) -> dict:
-            try:
-                return response
-            except Exception as e:
-                print(e)
 
         if isvip == 2:
             if not Vars.cfg.data.get("token"):
                 return "未登录,无法下载vip章节"
 
-            response = get_chapter_content(params={
+            response = Chapter.get_chapter_content(params={
                 "novelId": novel_id,
                 "chapterId": chapter_id,
                 "readState": "readahead",
                 "updateTime": int(time.time()),
             })
         else:
-            response = get_chapter_content(params={"novelId": novel_id, "chapterId": chapter_id})
+            response = Chapter.get_chapter_content(params={"novelId": novel_id, "chapterId": chapter_id})
         if response is None:
             return "程序错误,下载失败"
         if response.get("message") is None:
@@ -189,7 +191,8 @@ class Search:
             if len(novel_info.novel_name) > 15:
                 # 七八十字的书名都有...
                 novel_info.novel_name = novel_info.novel_name[:15] + "..."
-            table.add_row([str(index), novel_info.novel_id, novel_info.novel_name, novel_info.author_name, novel_info.tags])
+            table.add_row(
+                [str(index), novel_info.novel_id, novel_info.novel_name, novel_info.author_name, novel_info.tags])
         print(table)
         print("next page:[next or n]\t previous page:[previous or p], exit:[exit or e], input index to download.")
         while True:
@@ -208,4 +211,4 @@ class Search:
         return search_result[int(input_index)].novel_id
 
 
-__all__ = ['Book', 'Account', 'Search']
+__all__ = ['Book', 'Account', 'Search', 'Chapter']
