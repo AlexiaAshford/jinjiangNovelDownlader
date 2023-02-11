@@ -89,23 +89,38 @@ class Book:
 
     @staticmethod
     def get_chapter_list(novel_id: str):
-        download_content = []
 
         @CheckJson
         @GET(UrlConstant.CHAPTER_LIST)
         def get_chapter_list(response):  # get chapter list by novel_id
             return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
+        download_content = []
         chapter_list = get_chapter_list(params={"novelId": novel_id, "more": 0, "whole": 1})
         if chapter_list is not None and chapter_list.get("chapterlist"):
             for chapter in chapter_list['chapterlist']:
                 chap_info = template.ChapterInfo(**chapter)
-                chap_info.chaptername = re.sub(r'[\\/:*?"<>|]', '', chap_info.chaptername)
+                # chap_info.chaptername = re.sub(r'[\\/:*?"<>|]', '', chap_info.chaptername)
 
                 if not database.session.query(database.ChapterSql).filter(
                         database.ChapterSql.novelId == chap_info.novelid,
                         database.ChapterSql.chapterid == chap_info.chapterid).first():
                     download_content.append(chap_info)
+
+                database.session.add(database.CatalogueSql(
+                    novelid=chap_info.novelid,
+                    chapterid=chap_info.chapterid,
+                    chaptername=chap_info.chaptername,
+                    chaptersize=chap_info.chaptersize,
+                    chapterintro=chap_info.chapterintro,
+                    islock=chap_info.islock,
+                    islockMessage=chap_info.islockMessage,
+                    isvip=chap_info.isvip,
+                    point=chap_info.point,
+                    originalPrice=chap_info.originalPrice,
+                    pointfreevip=chap_info.pointfreevip,
+                    lastpost_time=chap_info.lastpost_time
+                ))
         return download_content
 
     @staticmethod

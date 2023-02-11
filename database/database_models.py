@@ -66,7 +66,18 @@ class ChapterSql(Base):
     chapter_content: typing.Optional[str] = Column(String, nullable=True)
 
 
-class CoverSql(Base):
-    __tablename__ = 'cover'
-    novelId: typing.Optional[str] = Column(Integer, primary_key=True)
-    Cover: typing.Optional[str] = Column(String)
+class CatalogueSql(Base):
+    __tablename__ = 'catalogue'
+    id: typing.Optional[str] = Column(Integer, primary_key=True, autoincrement=True)
+    novelid: typing.Optional[str] = Column(Integer)
+    chapterid: typing.Optional[str] = Column(String)
+    chaptername: typing.Optional[str] = Column(String)
+    chaptersize: typing.Optional[str] = Column(String)
+    chapterintro: typing.Optional[str] = Column(String)
+    islock: typing.Optional[str] = Column(String)
+    islockMessage: typing.Optional[str] = Column(String)
+    isvip: typing.Optional[str] = Column(String)
+    point: typing.Optional[str] = Column(String)
+    originalPrice: typing.Optional[str] = Column(String)
+    pointfreevip: typing.Optional[str] = Column(String)
+    lastpost_time: typing.Optional[str] = Column(String)
