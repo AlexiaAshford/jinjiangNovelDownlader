@@ -28,14 +28,14 @@ class Account:
         @CheckJsonAndAddModel(template.UserCenter)
         @GET(url_list.getUserCenter)
         def get_user_center(response: dict):
-            return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
+            return response, UrlConstant.WEB_HOST + url_list.getUserCenter
 
         result = get_user_center(params=None)  # type: template.UserCenter
         if result:
             @CheckJsonAndAddModel(template.UserInfo)
             @GET(url_list.getAppUserinfo)
             def get_user_info(response: dict):
-                return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
+                return response, UrlConstant.WEB_HOST + url_list.getAppUserinfo
 
             user_info = get_user_info(params=None)  # type: template.UserInfo
             table = PrettyTable()
@@ -84,7 +84,7 @@ class Book:
         @CheckJsonAndAddModel(template.BookInfo)
         @GET(url_list.novelbasicinfo)
         def novel_basic_info(response: dict):  # get book information by novel_id
-            return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
+            return response, UrlConstant.WEB_HOST + url_list.novelbasicinfo
 
         return novel_basic_info(params={"novelId": novel_id})
 
@@ -92,9 +92,9 @@ class Book:
     def get_chapter_list(novel_id: str):
 
         @CheckJson
-        @GET(UrlConstant.CHAPTER_LIST)
+        @GET(url_list.chapterList)
         def get_chapter_list(response):  # get chapter list by novel_id
-            return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
+            return response, UrlConstant.WEB_HOST + url_list.chapterList
 
         download_content = []
         chapter_list = get_chapter_list(params={"novelId": novel_id, "more": 0, "whole": 1})
@@ -128,7 +128,7 @@ class Book:
     def search_info(keyword: str, page: int = 0) -> [dict, None]:  # search book by keyword
         search_recommend = []
         if page == 1:
-            @GET(UrlConstant.SEARCH_INFO)
+            @GET(url_list.associativeSearch)
             def search_home_page(response: dict) -> [dict, None]:  # search book by keyword
                 if response.get("code") == '200':
                     return response.get("data")
