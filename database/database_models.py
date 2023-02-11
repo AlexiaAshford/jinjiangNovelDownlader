@@ -59,6 +59,12 @@ class BookInfoSql(Base):
         # delete sqlalchemy object attribute. Otherwise, it will cause an error when converting to json
         if "_sa_instance_state" in self.__dict__:
             self.__dict__.pop("_sa_instance_state")
+        novel_intro = self.__dict__.get("novelIntro")
+        if novel_intro is not None:
+            self.__dict__["novelIntro"] = ""
+            for line in novel_intro.replace("&lt;br/&gt;&lt;br/&gt;", "\n").split("\n"):
+                if line.strip():
+                    self.__dict__["novelIntro"] += line + "\n"
         return self.__dict__
 
 

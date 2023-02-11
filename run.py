@@ -46,7 +46,6 @@ def shell_command():
 @GetBookid
 def shell_get_book_info(bookid: str):
     filter_info = database.session.query(database.BookInfoSql).filter(database.BookInfoSql.novelId == bookid).first()
-    # print(filter_info.dict())
     if not filter_info or Vars.current_command.update_database:
         print("check database not exist book information, get information from server api.")
         Vars.current_book = src.Book.novel_basic_info(bookid)
@@ -101,7 +100,6 @@ def download_chapter(book_info):
             table.add_row([row[0].chapterid, row[0].chaptername, "免费" if row[0].isvip == 0 else "付费", row[1]])
         print(table)
         return current_book_obj
-
 
 
 def output_text_and_epub_file(book_info):
