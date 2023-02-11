@@ -1,11 +1,11 @@
 import time
 import random
 import database
-from .API import *
 import src.url_list
+import template
 from instance import *
 from prettytable import PrettyTable
-from lib import decode, CheckJson, CheckJsonAndAddModel
+from lib import decode, CheckJson, CheckJsonAndAddModel, GET
 
 
 class Account:
