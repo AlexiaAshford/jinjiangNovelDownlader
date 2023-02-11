@@ -1,3 +1,4 @@
+app_host = "https://app-cdn.jjwxc.net/"
 bbsapi = "bbsapi.phpsapi.php"
 favObservationByDate = "bookstore/favObservationByDate"
 getFullPageV1 = "bookstore/getFullPageV1"

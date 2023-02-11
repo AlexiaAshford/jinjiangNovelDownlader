@@ -1,33 +1,7 @@
 import template
 from rich import print
 from . import UrlConstant
-from lib import GET, CheckJsonAndAddModel, CheckJson
-
-
-# @CheckJsonAndAddModel(template.BookInfo)
-# @GET(UrlConstant.NOVEL_INFO)
-# def novel_basic_info(response: dict):  # get book information by novel_id
-#     return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
-
-#
-# @GET(UrlConstant.SEARCH_INFO)
-# def search_home_page(response: dict) -> [dict, None]:  # search book by keyword
-#     if response.get("code") == '200':
-#         return response.get("data")
-#     else:
-#         print("search failed:", response.get("message"))
-
-
-# @CheckJsonAndAddModel(template.UserCenter)
-# @GET("getUserCenter")
-# def get_user_center(response: dict):
-#     return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
-
-
-# @CheckJsonAndAddModel(template.UserInfo)
-# @GET("getAppUserinfo")
-# def get_user_info(response: dict):
-#     return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
+from lib import GET
 
 
 @GET("search")
@@ -43,12 +17,6 @@ def search_book(response: dict):  # search book by keyword
             print("search failed:", response.get("message"))
 
     return novel_info_list
-
-
-# @CheckJson
-# @GET(UrlConstant.CHAPTER_LIST)
-# def get_chapter_list(response):  # get chapter list by novel_id
-#     return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
 
 @GET("chapterContent")

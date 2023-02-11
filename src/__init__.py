@@ -1,11 +1,11 @@
-import random
 import time
+import random
 import database
-from instance import *
 from .API import *
-from lib import decode
 import src.url_list
+from instance import *
 from prettytable import PrettyTable
+from lib import decode, CheckJson, CheckJsonAndAddModel
 
 
 class Account:
@@ -28,14 +28,14 @@ class Account:
         @CheckJsonAndAddModel(template.UserCenter)
         @GET(url_list.getUserCenter)
         def get_user_center(response: dict):
-            return response, UrlConstant.WEB_HOST + url_list.getUserCenter
+            return response, url_list.app_host + url_list.getUserCenter
 
         result = get_user_center(params=None)  # type: template.UserCenter
         if result:
             @CheckJsonAndAddModel(template.UserInfo)
             @GET(url_list.getAppUserinfo)
             def get_user_info(response: dict):
-                return response, UrlConstant.WEB_HOST + url_list.getAppUserinfo
+                return response, url_list.app_host + url_list.getAppUserinfo
 
             user_info = get_user_info(params=None)  # type: template.UserInfo
             table = PrettyTable()
@@ -84,7 +84,7 @@ class Book:
         @CheckJsonAndAddModel(template.BookInfo)
         @GET(url_list.novelbasicinfo)
         def novel_basic_info(response: dict):  # get book information by novel_id
-            return response, UrlConstant.WEB_HOST + url_list.novelbasicinfo
+            return response, url_list.app_host + url_list.novelbasicinfo
 
         return novel_basic_info(params={"novelId": novel_id})
 
@@ -94,7 +94,7 @@ class Book:
         @CheckJson
         @GET(url_list.chapterList)
         def get_chapter_list(response):  # get chapter list by novel_id
-            return response, UrlConstant.WEB_HOST + url_list.chapterList
+            return response, url_list.app_host + url_list.chapterList
 
         download_content = []
         chapter_list = get_chapter_list(params={"novelId": novel_id, "more": 0, "whole": 1})
