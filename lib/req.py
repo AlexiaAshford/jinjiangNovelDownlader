@@ -24,7 +24,11 @@ def request(method, host, path):
     def decorator(func):
 
         def wrapper(params):
-            response = requests.request(method=method, url=host + path, params=set_params(params), headers=headers)
+            if path.find("androidapi") != -1:
+                url = host.replace("androidapi", "") + path
+            else:
+                url = host + path
+            response = requests.request(method=method, url=url, params=set_params(params), headers=headers)
             try:
                 return func(response.json())
             except Exception as e:

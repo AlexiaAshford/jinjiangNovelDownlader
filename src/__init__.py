@@ -4,6 +4,7 @@ import database
 from instance import *
 from .API import *
 from lib import decode
+import src.url_list
 from prettytable import PrettyTable
 
 
@@ -25,14 +26,14 @@ class Account:
     @staticmethod
     def user_center():
         @CheckJsonAndAddModel(template.UserCenter)
-        @GET("getUserCenter")
+        @GET(url_list.getUserCenter)
         def get_user_center(response: dict):
             return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
         result = get_user_center(params=None)  # type: template.UserCenter
         if result:
             @CheckJsonAndAddModel(template.UserInfo)
-            @GET("getAppUserinfo")
+            @GET(url_list.getAppUserinfo)
             def get_user_info(response: dict):
                 return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
@@ -81,7 +82,7 @@ class Book:
     @staticmethod
     def novel_basic_info(novel_id: str) -> template.BookInfo:
         @CheckJsonAndAddModel(template.BookInfo)
-        @GET(UrlConstant.NOVEL_INFO)
+        @GET(url_list.novelbasicinfo)
         def novel_basic_info(response: dict):  # get book information by novel_id
             return response, UrlConstant.WEB_HOST + UrlConstant.NOVEL_INFO
 
