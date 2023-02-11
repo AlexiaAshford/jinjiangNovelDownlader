@@ -152,7 +152,7 @@ def output_text_and_epub_file(book_info):
 
 
 def search_book(search_name: str, next_page: int = 1):
-    book_id = src.Book.search_info(keyword=search_name, page=next_page)
+    book_id = src.Search.search_info(keyword=search_name, page=next_page)
     if book_id is not None:
         shell_get_book_info(book_id)
 

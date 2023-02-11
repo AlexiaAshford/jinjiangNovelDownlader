@@ -48,17 +48,25 @@ class Account:
 class Chapter:
     @staticmethod
     def chapter_content(novel_id: str, chapter_id, isvip):  # get chapter list by novel_id
+        @GET(url_list.chapterContent)
+        def get_chapter_content(response) -> dict:
+            try:
+                return response
+            except Exception as e:
+                print(e)
+
         if isvip == 2:
             if not Vars.cfg.data.get("token"):
                 return "未登录,无法下载vip章节"
-            response = get_chapter_vip_content(params={
+
+            response = get_chapter_content(params={
                 "novelId": novel_id,
                 "chapterId": chapter_id,
                 "readState": "readahead",
                 "updateTime": int(time.time()),
             })
         else:
-            response = get_chapter_free_content(params={"novelId": novel_id, "chapterId": chapter_id})
+            response = get_chapter_content(params={"novelId": novel_id, "chapterId": chapter_id})
         if response is None:
             return "程序错误,下载失败"
         if response.get("message") is None:
@@ -67,15 +75,15 @@ class Chapter:
         else:
             return response.get("message")
 
-    @staticmethod
-    def chapter_free_content(novel_id: str, chapter_id):
-        response = get_chapter_free_content(params={"novelId": novel_id, "chapterId": chapter_id})
-        if response is None:
-            return "程序错误,下载失败"
-        if response.get("message") is None:
-            return template.ContentInfo(**response)
-        else:
-            return response.get("message")
+    # @staticmethod
+    # def chapter_free_content(novel_id: str, chapter_id):
+    #     response = get_chapter_free_content(params={"novelId": novel_id, "chapterId": chapter_id})
+    #     if response is None:
+    #         return "程序错误,下载失败"
+    #     if response.get("message") is None:
+    #         return template.ContentInfo(**response)
+    #     else:
+    #         return response.get("message")
 
 
 class Book:
@@ -124,24 +132,42 @@ class Book:
                 ))
         return download_content
 
+
+class Search:
+    @staticmethod
+    @GET(url_list.search)
+    def search_book(response: dict):  # search book by keyword
+        novel_info_list = []
+        if response.get("items"):
+            for index, novel_info in enumerate(response.get("items")):
+                novel_info_list.append(template.SearchInfo(**novel_info))
+        else:
+            if response.get("message") == "没有更多小说了！":
+                return response.get("message")
+            else:
+                print("search failed:", response.get("message"))
+
+        return novel_info_list
+
+    @staticmethod
+    @GET(url_list.associativeSearch)
+    def search_home_page(response: dict) -> [dict, None]:  # search book by keyword
+        if response.get("code") == '200':
+            return response.get("data")
+        else:
+            print("search failed:", response.get("message"))
+
     @staticmethod
     def search_info(keyword: str, page: int = 0) -> [dict, None]:  # search book by keyword
         search_recommend = []
         if page == 1:
-            @GET(url_list.associativeSearch)
-            def search_home_page(response: dict) -> [dict, None]:  # search book by keyword
-                if response.get("code") == '200':
-                    return response.get("data")
-                else:
-                    print("search failed:", response.get("message"))
-
-            for i in search_home_page(params={"keyword": keyword, "type": 1}):
+            for i in Search.search_home_page(params={"keyword": keyword, "type": 1}):
                 search_recommend.append(template.SearchInfo(
                     novelid=i.get("novelId"),
                     novelname=i.get("novelName"),
                     authorname=i.get("authorName"),
                 ))
-        search_result = search_book(params={
+        search_result = Search.search_book(params={
             "keyword": keyword,
             "type": 1,
             "page": page,
@@ -158,12 +184,12 @@ class Book:
                 return print(f"没有搜索到与关键词:{keyword} 相关小说")
             return print(search_result)
 
-        table = PrettyTable(['序号', '书号', '书名', '作者'])
+        table = PrettyTable(['序号', '书号', '书名', '作者', '标签'])
         for index, novel_info in enumerate(search_result):
             if len(novel_info.novel_name) > 15:
                 # 七八十字的书名都有...
                 novel_info.novel_name = novel_info.novel_name[:15] + "..."
-            table.add_row([str(index), novel_info.novel_id, novel_info.novel_name, novel_info.author_name])
+            table.add_row([str(index), novel_info.novel_id, novel_info.novel_name, novel_info.author_name, novel_info.tags])
         print(table)
         print("next page:[next or n]\t previous page:[previous or p], exit:[exit or e], input index to download.")
         while True:
@@ -171,15 +197,15 @@ class Book:
             if input_index.isdigit() and int(input_index) < len(search_result):
                 break
             elif input_index == "next" or input_index == "n":
-                return Book.search_info(keyword, page + 1)
+                return Search.search_info(keyword, page + 1)
             elif input_index == "previous" or input_index == "p":
                 if page <= 1:
                     print("已经是第一页了")
                     continue
-                return Book.search_info(keyword, page - 1)
+                return Search.search_info(keyword, page - 1)
             elif input_index == "exit" or input_index == "e":
                 return
         return search_result[int(input_index)].novel_id
 
 
-__all__ = ['Book', 'Account']
+__all__ = ['Book', 'Account', 'Search']
