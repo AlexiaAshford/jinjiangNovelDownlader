@@ -55,6 +55,12 @@ class BookInfoSql(Base):
     authorsayrule: typing.Optional[str] = Column(String)
     copystatus: typing.Optional[str] = Column(String)
 
+    def dict(self):
+        # delete sqlalchemy object attribute. Otherwise, it will cause an error when converting to json
+        if "_sa_instance_state" in self.__dict__:
+            self.__dict__.pop("_sa_instance_state")
+        return self.__dict__
+
 
 class ChapterSql(Base):
     __tablename__ = 'chapterinfo'

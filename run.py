@@ -46,6 +46,7 @@ def shell_command():
 @GetBookid
 def shell_get_book_info(bookid: str):
     filter_info = database.session.query(database.BookInfoSql).filter(database.BookInfoSql.novelId == bookid).first()
+    # print(filter_info.dict())
     if not filter_info or Vars.current_command.update_database:
         print("check database not exist book information, get information from server api.")
         Vars.current_book = src.Book.novel_basic_info(bookid)
@@ -55,9 +56,7 @@ def shell_get_book_info(bookid: str):
         database.session.commit()
     else:
         print("check database exist book information, not get information from server api.")
-        # delete sqlalchemy object attribute.
-        filter_info.__dict__.pop("_sa_instance_state")
-        Vars.current_book = template.BookInfo(**filter_info.__dict__)
+        Vars.current_book = template.BookInfo(**filter_info.dict())
 
     if not os.path.exists(f"{Vars.current_command.output}/{Vars.current_book.novelName}"):
         os.makedirs(f"{Vars.current_command.output}/{Vars.current_book.novelName}")
@@ -103,15 +102,6 @@ def download_chapter(book_info):
         print(table)
         return current_book_obj
 
-
-# def get_cache_file_name(book_info):
-#     set_file_name_list = []
-#     for file_name in os.listdir(Vars.current_command.cache):
-#         if file_name.find(book_info.novelId) != -1:
-#             set_file_name_list.append(file_name)
-#
-#     set_file_name_list.sort(key=lambda x: int(x.split("-")[1]))  # sort file name by chapter id number.
-#     return set_file_name_list
 
 
 def output_text_and_epub_file(book_info):
