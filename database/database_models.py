@@ -77,6 +77,12 @@ class ChapterSql(Base):
     chapter_name: typing.Optional[str] = Column(String, nullable=True)
     chapter_content: typing.Optional[str] = Column(String, nullable=True)
 
+    def dict(self):
+        # delete sqlalchemy object attribute. Otherwise, it will cause an error when converting to json
+        if "_sa_instance_state" in self.__dict__:
+            self.__dict__.pop("_sa_instance_state")
+        return self.__dict__
+
 
 class CatalogueSql(Base):
     __tablename__ = 'catalogue'
@@ -93,3 +99,9 @@ class CatalogueSql(Base):
     originalPrice: typing.Optional[str] = Column(String)
     pointfreevip: typing.Optional[str] = Column(String)
     lastpost_time: typing.Optional[str] = Column(String)
+
+    def dict(self):
+        # delete sqlalchemy object attribute. Otherwise, it will cause an error when converting to json
+        if "_sa_instance_state" in self.__dict__:
+            self.__dict__.pop("_sa_instance_state")
+        return self.__dict__
